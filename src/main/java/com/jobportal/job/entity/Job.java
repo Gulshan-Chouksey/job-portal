@@ -26,5 +26,11 @@ public class Job {
     @Column(nullable = false)
     private String title;
 
+    @Column(length=2000)
+    private String description;
+
     private String location;
+
+    private Integer salaryMin;
+    private Integer salaryMax;
 }
