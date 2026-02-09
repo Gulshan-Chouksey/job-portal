@@ -14,6 +14,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.jobportal.job.dto.JobRequestDTO;
+import com.jobportal.job.dto.JobResponseDTO;
 import com.jobportal.job.entity.Job;
 import com.jobportal.job.repository.JobRepository;
 
@@ -28,27 +30,54 @@ class JobServiceTest {
 
     @Test
     void shouldCreateJobSuccessfully() {
-        Job job = new Job(null, "Java Developer", "Backend role", "Remote", 50000, 80000);
 
-        when(jobRepository.save(any(Job.class))).thenReturn(job);
+        JobRequestDTO request = new JobRequestDTO(
+                "Java Developer",
+                "Backend role",
+                "Remote",
+                50000,
+                80000
+        );
 
-        Job savedJob = jobService.createJob(job);
+        Job savedJob = new Job(
+                1L,
+                "Java Developer",
+                "Backend role",
+                "Remote",
+                50000,
+                80000
+        );
 
-        assertNotNull(savedJob);
-        assertEquals("Java Developer", savedJob.getTitle());
-        verify(jobRepository, times(1)).save(job);
+        when(jobRepository.save(any(Job.class))).thenReturn(savedJob);
+
+        JobResponseDTO response = jobService.createJob(request);
+
+        assertNotNull(response);
+        assertEquals("Java Developer", response.getTitle());
+        assertEquals(1L, response.getId());
+
+        verify(jobRepository, times(1)).save(any(Job.class));
     }
 
     @Test
     void shouldReturnAllJobs() {
-        Job job = new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000);
+
+        Job job = new Job(
+                1L,
+                "Java Dev",
+                "Backend",
+                "Remote",
+                50000,
+                80000
+        );
 
         when(jobRepository.findAll()).thenReturn(List.of(job));
 
-        List<Job> jobs = jobService.getAllJobs();
+        List<JobResponseDTO> responses = jobService.getAllJobs();
 
-        assertEquals(1, jobs.size());
+        assertEquals(1, responses.size());
+        assertEquals("Java Dev", responses.get(0).getTitle());
+
         verify(jobRepository, times(1)).findAll();
     }
 }
-
