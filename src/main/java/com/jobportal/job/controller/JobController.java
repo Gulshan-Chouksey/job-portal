@@ -42,6 +42,12 @@ public class JobController {
         return ResponseEntity.ok(ApiResponse.success("Jobs retrieved successfully", jobs));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<JobResponseDTO>> getJobById(@PathVariable Long id) {
+        JobResponseDTO response = jobService.getJobById(id);
+        return ResponseEntity.ok(ApiResponse.success("Job retrieved successfully", response));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<JobResponseDTO>> updateJob(
             @PathVariable Long id,
