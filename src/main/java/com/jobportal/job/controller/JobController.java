@@ -1,7 +1,8 @@
 package com.jobportal.job.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,8 +32,9 @@ public class JobController {
     }
 
     @GetMapping
-    public ResponseEntity<List<JobResponseDTO>> getAllJobs() {
-        List<JobResponseDTO> jobs = jobService.getAllJobs();
+    public ResponseEntity<Page<JobResponseDTO>> getAllJobs(
+            @PageableDefault(size = 10, sort = "id") Pageable pageable) {
+        Page<JobResponseDTO> jobs = jobService.getAllJobs(pageable);
         return ResponseEntity.ok(jobs);
     }
 }
