@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jobportal.common.response.ApiResponse;
 import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
 import com.jobportal.job.service.JobService;
@@ -29,29 +30,29 @@ public class JobController {
     private final JobService jobService;
 
     @PostMapping
-    public ResponseEntity<JobResponseDTO> createJob(@Valid @RequestBody JobRequestDTO request) {
+    public ResponseEntity<ApiResponse<JobResponseDTO>> createJob(@Valid @RequestBody JobRequestDTO request) {
         JobResponseDTO response = jobService.createJob(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(ApiResponse.success("Job created successfully", response), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<Page<JobResponseDTO>> getAllJobs(
+    public ResponseEntity<ApiResponse<Page<JobResponseDTO>>> getAllJobs(
             @PageableDefault(size = 10, sort = "id") Pageable pageable) {
         Page<JobResponseDTO> jobs = jobService.getAllJobs(pageable);
-        return ResponseEntity.ok(jobs);
+        return ResponseEntity.ok(ApiResponse.success("Jobs retrieved successfully", jobs));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<JobResponseDTO> updateJob(
+    public ResponseEntity<ApiResponse<JobResponseDTO>> updateJob(
             @PathVariable Long id,
             @Valid @RequestBody JobRequestDTO request) {
         JobResponseDTO response = jobService.updateJob(id, request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("Job updated successfully", response));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteJob(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteJob(@PathVariable Long id) {
         jobService.deleteJob(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("Job deleted successfully"));
     }
 }
