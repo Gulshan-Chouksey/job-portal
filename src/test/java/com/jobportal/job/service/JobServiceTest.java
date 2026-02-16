@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -182,5 +183,45 @@ class JobServiceTest {
 
         verify(jobRepository, times(1)).findById(jobId);
         verify(jobRepository, times(0)).save(any(Job.class));
+    }
+
+    @Test
+    void shouldDeleteJobSuccessfully() {
+
+        Long jobId = 1L;
+
+        Job existingJob = new Job(
+                jobId,
+                "Java Dev",
+                "Backend",
+                "Remote",
+                50000,
+                80000
+        );
+
+        when(jobRepository.findById(jobId)).thenReturn(java.util.Optional.of(existingJob));
+
+        jobService.deleteJob(jobId);
+
+        verify(jobRepository, times(1)).findById(jobId);
+        verify(jobRepository, times(1)).delete(existingJob);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingNonExistentJob() {
+
+        Long jobId = 99L;
+
+        when(jobRepository.findById(jobId)).thenReturn(java.util.Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> jobService.deleteJob(jobId)
+        );
+
+        assertEquals("Job not found with id: 99", exception.getMessage());
+
+        verify(jobRepository, times(1)).findById(jobId);
+        verify(jobRepository, never()).delete(any(Job.class));
     }
 }
