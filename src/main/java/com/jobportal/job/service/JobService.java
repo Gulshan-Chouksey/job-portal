@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.jobportal.common.exception.ResourceNotFoundException;
 import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
 import com.jobportal.job.entity.Job;
@@ -44,6 +45,22 @@ public class JobService {
     public Page<JobResponseDTO> getAllJobs(Pageable pageable) {
         return jobRepository.findAll(pageable)
                 .map(this::mapToResponse);
+    }
+
+    public JobResponseDTO updateJob(Long id, JobRequestDTO request) {
+
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + id));
+
+        job.setTitle(request.getTitle());
+        job.setDescription(request.getDescription());
+        job.setLocation(request.getLocation());
+        job.setSalaryMin(request.getSalaryMin());
+        job.setSalaryMax(request.getSalaryMax());
+
+        Job updated = jobRepository.save(job);
+
+        return mapToResponse(updated);
     }
 
     private JobResponseDTO mapToResponse(Job job) {
