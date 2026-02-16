@@ -47,6 +47,14 @@ public class JobService {
                 .map(this::mapToResponse);
     }
 
+    public JobResponseDTO getJobById(Long id) {
+
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + id));
+
+        return mapToResponse(job);
+    }
+
     public JobResponseDTO updateJob(Long id, JobRequestDTO request) {
 
         Job job = jobRepository.findById(id)
