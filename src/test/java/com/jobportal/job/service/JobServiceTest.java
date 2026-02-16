@@ -13,6 +13,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
@@ -79,5 +83,31 @@ class JobServiceTest {
         assertEquals("Java Dev", responses.get(0).getTitle());
 
         verify(jobRepository, times(1)).findAll();
+    }
+
+    @Test
+    void shouldReturnPaginatedJobs() {
+
+        Job job = new Job(
+                1L,
+                "Spring Dev",
+                "Backend role",
+                "Hybrid",
+                60000,
+                90000
+        );
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Job> jobPage = new PageImpl<>(List.of(job), pageable, 1);
+
+        when(jobRepository.findAll(pageable)).thenReturn(jobPage);
+
+        Page<JobResponseDTO> result = jobService.getAllJobs(pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Spring Dev", result.getContent().get(0).getTitle());
+
+        verify(jobRepository, times(1)).findAll(pageable);
     }
 }
