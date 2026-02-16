@@ -3,6 +3,8 @@ package com.jobportal.job.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.jobportal.job.dto.JobRequestDTO;
@@ -37,6 +39,11 @@ public class JobService {
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    public Page<JobResponseDTO> getAllJobs(Pageable pageable) {
+        return jobRepository.findAll(pageable)
+                .map(this::mapToResponse);
     }
 
     private JobResponseDTO mapToResponse(Job job) {
