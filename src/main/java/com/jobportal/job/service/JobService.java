@@ -63,6 +63,14 @@ public class JobService {
         return mapToResponse(updated);
     }
 
+    public void deleteJob(Long id) {
+
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + id));
+
+        jobRepository.delete(job);
+    }
+
     private JobResponseDTO mapToResponse(Job job) {
         return JobResponseDTO.builder()
                 .id(job.getId())
