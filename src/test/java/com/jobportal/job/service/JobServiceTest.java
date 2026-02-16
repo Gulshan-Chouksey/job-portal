@@ -4,6 +4,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import com.jobportal.common.exception.ResourceNotFoundException;
 import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
 import com.jobportal.job.entity.Job;
@@ -109,5 +111,76 @@ class JobServiceTest {
         assertEquals("Spring Dev", result.getContent().get(0).getTitle());
 
         verify(jobRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    void shouldUpdateJobSuccessfully() {
+
+        Long jobId = 1L;
+
+        Job existingJob = new Job(
+                jobId,
+                "Old Title",
+                "Old Description",
+                "Old Location",
+                40000,
+                60000
+        );
+
+        JobRequestDTO updateRequest = new JobRequestDTO(
+                "Updated Title",
+                "Updated Description",
+                "Updated Location",
+                70000,
+                100000
+        );
+
+        Job updatedJob = new Job(
+                jobId,
+                "Updated Title",
+                "Updated Description",
+                "Updated Location",
+                70000,
+                100000
+        );
+
+        when(jobRepository.findById(jobId)).thenReturn(java.util.Optional.of(existingJob));
+        when(jobRepository.save(any(Job.class))).thenReturn(updatedJob);
+
+        JobResponseDTO response = jobService.updateJob(jobId, updateRequest);
+
+        assertNotNull(response);
+        assertEquals("Updated Title", response.getTitle());
+        assertEquals("Updated Location", response.getLocation());
+        assertEquals(70000, response.getSalaryMin());
+
+        verify(jobRepository, times(1)).findById(jobId);
+        verify(jobRepository, times(1)).save(any(Job.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenJobNotFound() {
+
+        Long jobId = 99L;
+
+        JobRequestDTO request = new JobRequestDTO(
+                "Title",
+                "Desc",
+                "Location",
+                50000,
+                80000
+        );
+
+        when(jobRepository.findById(jobId)).thenReturn(java.util.Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> jobService.updateJob(jobId, request)
+        );
+
+        assertEquals("Job not found with id: 99", exception.getMessage());
+
+        verify(jobRepository, times(1)).findById(jobId);
+        verify(jobRepository, times(0)).save(any(Job.class));
     }
 }
