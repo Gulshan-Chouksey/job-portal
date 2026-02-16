@@ -115,6 +115,49 @@ class JobServiceTest {
     }
 
     @Test
+    void shouldGetJobByIdSuccessfully() {
+
+        Long jobId = 1L;
+
+        Job job = new Job(
+                jobId,
+                "Java Dev",
+                "Backend role",
+                "Remote",
+                50000,
+                80000
+        );
+
+        when(jobRepository.findById(jobId)).thenReturn(java.util.Optional.of(job));
+
+        JobResponseDTO response = jobService.getJobById(jobId);
+
+        assertNotNull(response);
+        assertEquals(jobId, response.getId());
+        assertEquals("Java Dev", response.getTitle());
+        assertEquals("Remote", response.getLocation());
+
+        verify(jobRepository, times(1)).findById(jobId);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenGettingNonExistentJob() {
+
+        Long jobId = 99L;
+
+        when(jobRepository.findById(jobId)).thenReturn(java.util.Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> jobService.getJobById(jobId)
+        );
+
+        assertEquals("Job not found with id: 99", exception.getMessage());
+
+        verify(jobRepository, times(1)).findById(jobId);
+    }
+
+    @Test
     void shouldUpdateJobSuccessfully() {
 
         Long jobId = 1L;
