@@ -112,6 +112,31 @@ class JobControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.totalElements", is(0)));
     }
 
+    // ---- GET /api/jobs/{id} ----
+
+    @Test
+    void shouldReturnJobByIdAndReturn200() throws Exception {
+
+        Job saved = jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000));
+
+        mockMvc.perform(get("/api/jobs/{id}", saved.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.message", is("Job retrieved successfully")))
+                .andExpect(jsonPath("$.data.id", is(saved.getId().intValue())))
+                .andExpect(jsonPath("$.data.title", is("Java Dev")))
+                .andExpect(jsonPath("$.data.location", is("Remote")));
+    }
+
+    @Test
+    void shouldReturn404WhenGettingNonExistentJob() throws Exception {
+
+        mockMvc.perform(get("/api/jobs/{id}", 999L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Job not found with id: 999")));
+    }
+
     // ---- PUT /api/jobs/{id} ----
 
     @Test
