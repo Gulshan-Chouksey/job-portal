@@ -1,5 +1,7 @@
 package com.jobportal.job.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,4 +21,6 @@ public class JobResponseDTO {
     private String location;
     private Integer salaryMin;
     private Integer salaryMax;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
