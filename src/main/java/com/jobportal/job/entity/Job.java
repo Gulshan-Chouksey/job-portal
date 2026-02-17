@@ -9,6 +9,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,6 +43,10 @@ public class Job {
 
     private Integer salaryMin;
     private Integer salaryMax;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private JobStatus status = JobStatus.ACTIVE;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
