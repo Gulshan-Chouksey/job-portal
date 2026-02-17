@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jobportal.common.response.ApiResponse;
 import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
+import com.jobportal.job.entity.JobStatus;
 import com.jobportal.job.service.JobService;
 
 import jakarta.validation.Valid;
@@ -49,8 +50,9 @@ public class JobController {
             @RequestParam(required = false) String location,
             @RequestParam(required = false) Integer minSalary,
             @RequestParam(required = false) Integer maxSalary,
+            @RequestParam(required = false) JobStatus status,
             @PageableDefault(size = 10, sort = "id") Pageable pageable) {
-        Page<JobResponseDTO> jobs = jobService.searchJobs(keyword, location, minSalary, maxSalary, pageable);
+        Page<JobResponseDTO> jobs = jobService.searchJobs(keyword, location, minSalary, maxSalary, status, pageable);
         return ResponseEntity.ok(ApiResponse.success("Jobs search results", jobs));
     }
 
