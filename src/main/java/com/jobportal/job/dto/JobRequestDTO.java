@@ -1,5 +1,8 @@
 package com.jobportal.job.dto;
 
+import com.jobportal.job.entity.JobStatus;
+
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -26,4 +29,14 @@ public class JobRequestDTO {
 
     @NotNull
     private Integer salaryMax;
+
+    private JobStatus status;
+
+    @AssertTrue(message = "salaryMin must be less than or equal to salaryMax")
+    private boolean isSalaryRangeValid() {
+        if (salaryMin == null || salaryMax == null) {
+            return true;
+        }
+        return salaryMin <= salaryMax;
+    }
 }
