@@ -92,8 +92,8 @@ class JobControllerIntegrationTest {
     @Test
     void shouldReturnPaginatedJobsAndReturn200() throws Exception {
 
-        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
-        jobRepository.save(new Job(null, "Python Dev", "ML role", "Hybrid", 60000, 90000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Python Dev", "ML role", "Hybrid", 60000, 90000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs")
                         .param("page", "0")
@@ -122,7 +122,7 @@ class JobControllerIntegrationTest {
     @Test
     void shouldReturnJobByIdAndReturn200() throws Exception {
 
-        Job saved = jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        Job saved = jobRepository.save(new Job(null, null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/{id}", saved.getId()))
                 .andExpect(status().isOk())
@@ -147,7 +147,7 @@ class JobControllerIntegrationTest {
     @Test
     void shouldUpdateJobAndReturn200() throws Exception {
 
-        Job saved = jobRepository.save(new Job(null, "Old Title", "Old Desc", "Old Loc", 40000, 60000, JobStatus.ACTIVE, null, null));
+        Job saved = jobRepository.save(new Job(null, null, "Old Title", "Old Desc", "Old Loc", 40000, 60000, JobStatus.ACTIVE, null, null));
 
         String updateBody = """
                 {
@@ -195,7 +195,7 @@ class JobControllerIntegrationTest {
     @Test
     void shouldDeleteJobAndReturn200() throws Exception {
 
-        Job saved = jobRepository.save(new Job(null, "To Delete", "Desc", "Location", 50000, 80000, JobStatus.ACTIVE, null, null));
+        Job saved = jobRepository.save(new Job(null, null, "To Delete", "Desc", "Location", 50000, 80000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(delete("/api/jobs/{id}", saved.getId()))
                 .andExpect(status().isOk())
@@ -217,9 +217,9 @@ class JobControllerIntegrationTest {
     @Test
     void shouldSearchJobsByKeyword() throws Exception {
 
-        jobRepository.save(new Job(null, "Java Developer", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
-        jobRepository.save(new Job(null, "Python Developer", "ML role", "Hybrid", 60000, 90000, JobStatus.ACTIVE, null, null));
-        jobRepository.save(new Job(null, "DevOps Engineer", "Infra role", "Onsite", 70000, 100000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Java Developer", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Python Developer", "ML role", "Hybrid", 60000, 90000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "DevOps Engineer", "Infra role", "Onsite", 70000, 100000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/search")
                         .param("keyword", "Developer"))
@@ -233,8 +233,8 @@ class JobControllerIntegrationTest {
     @Test
     void shouldSearchJobsByLocation() throws Exception {
 
-        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
-        jobRepository.save(new Job(null, "Python Dev", "ML role", "Bangalore", 60000, 90000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Python Dev", "ML role", "Bangalore", 60000, 90000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/search")
                         .param("location", "Remote"))
@@ -246,9 +246,9 @@ class JobControllerIntegrationTest {
     @Test
     void shouldSearchJobsBySalaryRange() throws Exception {
 
-        jobRepository.save(new Job(null, "Junior Dev", "Entry level", "Remote", 30000, 50000, JobStatus.ACTIVE, null, null));
-        jobRepository.save(new Job(null, "Senior Dev", "Senior role", "Hybrid", 80000, 120000, JobStatus.ACTIVE, null, null));
-        jobRepository.save(new Job(null, "Mid Dev", "Mid level", "Onsite", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Junior Dev", "Entry level", "Remote", 30000, 50000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Senior Dev", "Senior role", "Hybrid", 80000, 120000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Mid Dev", "Mid level", "Onsite", 50000, 80000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/search")
                         .param("minSalary", "50000")
@@ -261,8 +261,8 @@ class JobControllerIntegrationTest {
     @Test
     void shouldReturnAllJobsWhenNoFiltersProvided() throws Exception {
 
-        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
-        jobRepository.save(new Job(null, "Python Dev", "ML role", "Hybrid", 60000, 90000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Python Dev", "ML role", "Hybrid", 60000, 90000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/search"))
                 .andExpect(status().isOk())
@@ -274,7 +274,7 @@ class JobControllerIntegrationTest {
     @Test
     void shouldReturnEmptyResultsWhenNoJobsMatchSearch() throws Exception {
 
-        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/search")
                         .param("keyword", "Nonexistent"))
@@ -330,9 +330,9 @@ class JobControllerIntegrationTest {
     @Test
     void shouldSearchJobsByStatus() throws Exception {
 
-        jobRepository.save(new Job(null, "Active Job", "Desc", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
-        jobRepository.save(new Job(null, "Draft Job", "Desc", "Remote", 50000, 80000, JobStatus.DRAFT, null, null));
-        jobRepository.save(new Job(null, "Closed Job", "Desc", "Remote", 50000, 80000, JobStatus.CLOSED, null, null));
+        jobRepository.save(new Job(null, null, "Active Job", "Desc", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, null, "Draft Job", "Desc", "Remote", 50000, 80000, JobStatus.DRAFT, null, null));
+        jobRepository.save(new Job(null, null, "Closed Job", "Desc", "Remote", 50000, 80000, JobStatus.CLOSED, null, null));
 
         mockMvc.perform(get("/api/jobs/search")
                         .param("status", "ACTIVE"))

@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.jobportal.common.exception.ResourceNotFoundException;
+import com.jobportal.employer.repository.EmployerRepository;
 import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
 import com.jobportal.job.entity.Job;
@@ -37,6 +38,9 @@ class JobServiceTest {
 
     @Mock
     private JobRepository jobRepository;
+
+    @Mock
+    private EmployerRepository employerRepository;
 
     @InjectMocks
     private JobService jobService;
@@ -55,6 +59,7 @@ class JobServiceTest {
 
         Job savedJob = new Job(
                 1L,
+                null,
                 "Java Developer",
                 "Backend role",
                 "Remote",
@@ -81,6 +86,7 @@ class JobServiceTest {
 
         Job job = new Job(
                 1L,
+                null,
                 "Java Dev",
                 "Backend",
                 "Remote",
@@ -106,6 +112,7 @@ class JobServiceTest {
 
         Job job = new Job(
                 1L,
+                null,
                 "Spring Dev",
                 "Backend role",
                 "Hybrid",
@@ -137,6 +144,7 @@ class JobServiceTest {
 
         Job job = new Job(
                 jobId,
+                null,
                 "Java Dev",
                 "Backend role",
                 "Remote",
@@ -183,6 +191,7 @@ class JobServiceTest {
 
         Job existingJob = new Job(
                 jobId,
+                null,
                 "Old Title",
                 "Old Description",
                 "Old Location",
@@ -204,6 +213,7 @@ class JobServiceTest {
 
         Job updatedJob = new Job(
                 jobId,
+                null,
                 "Updated Title",
                 "Updated Description",
                 "Updated Location",
@@ -262,6 +272,7 @@ class JobServiceTest {
 
         Job existingJob = new Job(
                 jobId,
+                null,
                 "Java Dev",
                 "Backend",
                 "Remote",
@@ -302,7 +313,7 @@ class JobServiceTest {
     @Test
     void shouldSearchJobsByKeyword() {
 
-        Job job = new Job(1L, "Java Developer", "Backend role", "Remote", 50000, 80000, JobStatus.ACTIVE, NOW, NOW);
+        Job job = new Job(1L, null, "Java Developer", "Backend role", "Remote", 50000, 80000, JobStatus.ACTIVE, NOW, NOW);
 
         Pageable pageable = PageRequest.of(0, 10);
         Page<Job> jobPage = new PageImpl<>(List.of(job), pageable, 1);
@@ -321,7 +332,7 @@ class JobServiceTest {
     @Test
     void shouldSearchJobsByLocationAndSalaryRange() {
 
-        Job job = new Job(1L, "Python Dev", "ML role", "Bangalore", 70000, 100000, JobStatus.ACTIVE, NOW, NOW);
+        Job job = new Job(1L, null, "Python Dev", "ML role", "Bangalore", 70000, 100000, JobStatus.ACTIVE, NOW, NOW);
 
         Pageable pageable = PageRequest.of(0, 10);
         Page<Job> jobPage = new PageImpl<>(List.of(job), pageable, 1);
@@ -367,6 +378,7 @@ class JobServiceTest {
 
         Job savedJob = new Job(
                 1L,
+                null,
                 "Draft Job",
                 "A draft job",
                 "Remote",
@@ -392,7 +404,7 @@ class JobServiceTest {
     @Test
     void shouldSearchJobsByStatus() {
 
-        Job activeJob = new Job(1L, "Active Job", "Desc", "Remote", 50000, 80000, JobStatus.ACTIVE, NOW, NOW);
+        Job activeJob = new Job(1L, null, "Active Job", "Desc", "Remote", 50000, 80000, JobStatus.ACTIVE, NOW, NOW);
 
         Pageable pageable = PageRequest.of(0, 10);
         Page<Job> jobPage = new PageImpl<>(List.of(activeJob), pageable, 1);
@@ -421,6 +433,7 @@ class JobServiceTest {
 
         Job savedJob = new Job(
                 1L,
+                null,
                 "No Status Job",
                 "Testing default",
                 "Onsite",
