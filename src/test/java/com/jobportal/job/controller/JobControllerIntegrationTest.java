@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jobportal.job.entity.Job;
+import com.jobportal.job.entity.JobStatus;
 import com.jobportal.job.repository.JobRepository;
 
 @SpringBootTest
@@ -89,8 +90,8 @@ class JobControllerIntegrationTest {
     @Test
     void shouldReturnPaginatedJobsAndReturn200() throws Exception {
 
-        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, null, null));
-        jobRepository.save(new Job(null, "Python Dev", "ML role", "Hybrid", 60000, 90000, null, null));
+        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, "Python Dev", "ML role", "Hybrid", 60000, 90000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs")
                         .param("page", "0")
@@ -119,7 +120,7 @@ class JobControllerIntegrationTest {
     @Test
     void shouldReturnJobByIdAndReturn200() throws Exception {
 
-        Job saved = jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, null, null));
+        Job saved = jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/{id}", saved.getId()))
                 .andExpect(status().isOk())
@@ -144,7 +145,7 @@ class JobControllerIntegrationTest {
     @Test
     void shouldUpdateJobAndReturn200() throws Exception {
 
-        Job saved = jobRepository.save(new Job(null, "Old Title", "Old Desc", "Old Loc", 40000, 60000, null, null));
+        Job saved = jobRepository.save(new Job(null, "Old Title", "Old Desc", "Old Loc", 40000, 60000, JobStatus.ACTIVE, null, null));
 
         String updateBody = """
                 {
@@ -192,7 +193,7 @@ class JobControllerIntegrationTest {
     @Test
     void shouldDeleteJobAndReturn200() throws Exception {
 
-        Job saved = jobRepository.save(new Job(null, "To Delete", "Desc", "Location", 50000, 80000, null, null));
+        Job saved = jobRepository.save(new Job(null, "To Delete", "Desc", "Location", 50000, 80000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(delete("/api/jobs/{id}", saved.getId()))
                 .andExpect(status().isOk())
@@ -214,9 +215,9 @@ class JobControllerIntegrationTest {
     @Test
     void shouldSearchJobsByKeyword() throws Exception {
 
-        jobRepository.save(new Job(null, "Java Developer", "Backend", "Remote", 50000, 80000, null, null));
-        jobRepository.save(new Job(null, "Python Developer", "ML role", "Hybrid", 60000, 90000, null, null));
-        jobRepository.save(new Job(null, "DevOps Engineer", "Infra role", "Onsite", 70000, 100000, null, null));
+        jobRepository.save(new Job(null, "Java Developer", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, "Python Developer", "ML role", "Hybrid", 60000, 90000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, "DevOps Engineer", "Infra role", "Onsite", 70000, 100000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/search")
                         .param("keyword", "Developer"))
@@ -230,8 +231,8 @@ class JobControllerIntegrationTest {
     @Test
     void shouldSearchJobsByLocation() throws Exception {
 
-        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, null, null));
-        jobRepository.save(new Job(null, "Python Dev", "ML role", "Bangalore", 60000, 90000, null, null));
+        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, "Python Dev", "ML role", "Bangalore", 60000, 90000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/search")
                         .param("location", "Remote"))
@@ -243,9 +244,9 @@ class JobControllerIntegrationTest {
     @Test
     void shouldSearchJobsBySalaryRange() throws Exception {
 
-        jobRepository.save(new Job(null, "Junior Dev", "Entry level", "Remote", 30000, 50000, null, null));
-        jobRepository.save(new Job(null, "Senior Dev", "Senior role", "Hybrid", 80000, 120000, null, null));
-        jobRepository.save(new Job(null, "Mid Dev", "Mid level", "Onsite", 50000, 80000, null, null));
+        jobRepository.save(new Job(null, "Junior Dev", "Entry level", "Remote", 30000, 50000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, "Senior Dev", "Senior role", "Hybrid", 80000, 120000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, "Mid Dev", "Mid level", "Onsite", 50000, 80000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/search")
                         .param("minSalary", "50000")
@@ -258,8 +259,8 @@ class JobControllerIntegrationTest {
     @Test
     void shouldReturnAllJobsWhenNoFiltersProvided() throws Exception {
 
-        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, null, null));
-        jobRepository.save(new Job(null, "Python Dev", "ML role", "Hybrid", 60000, 90000, null, null));
+        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, "Python Dev", "ML role", "Hybrid", 60000, 90000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/search"))
                 .andExpect(status().isOk())
@@ -271,12 +272,93 @@ class JobControllerIntegrationTest {
     @Test
     void shouldReturnEmptyResultsWhenNoJobsMatchSearch() throws Exception {
 
-        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, null, null));
+        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
 
         mockMvc.perform(get("/api/jobs/search")
                         .param("keyword", "Nonexistent"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.content", hasSize(0)))
                 .andExpect(jsonPath("$.data.totalElements", is(0)));
+    }
+
+    // ---- Job Status Tests ----
+
+    @Test
+    void shouldCreateJobWithSpecificStatus() throws Exception {
+
+        String requestBody = """
+                {
+                    "title": "Draft Job",
+                    "description": "A draft position",
+                    "location": "Remote",
+                    "salaryMin": 50000,
+                    "salaryMax": 80000,
+                    "status": "DRAFT"
+                }
+                """;
+
+        mockMvc.perform(post("/api/jobs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.status", is("DRAFT")));
+    }
+
+    @Test
+    void shouldCreateJobWithDefaultActiveStatus() throws Exception {
+
+        String requestBody = """
+                {
+                    "title": "Active Job",
+                    "description": "No status specified",
+                    "location": "Onsite",
+                    "salaryMin": 40000,
+                    "salaryMax": 70000
+                }
+                """;
+
+        mockMvc.perform(post("/api/jobs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.status", is("ACTIVE")));
+    }
+
+    @Test
+    void shouldSearchJobsByStatus() throws Exception {
+
+        jobRepository.save(new Job(null, "Active Job", "Desc", "Remote", 50000, 80000, JobStatus.ACTIVE, null, null));
+        jobRepository.save(new Job(null, "Draft Job", "Desc", "Remote", 50000, 80000, JobStatus.DRAFT, null, null));
+        jobRepository.save(new Job(null, "Closed Job", "Desc", "Remote", 50000, 80000, JobStatus.CLOSED, null, null));
+
+        mockMvc.perform(get("/api/jobs/search")
+                        .param("status", "ACTIVE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content", hasSize(1)))
+                .andExpect(jsonPath("$.data.content[0].title", is("Active Job")));
+    }
+
+    // ---- Salary Validation Tests ----
+
+    @Test
+    void shouldReturn400WhenSalaryMinGreaterThanSalaryMax() throws Exception {
+
+        String requestBody = """
+                {
+                    "title": "Invalid Salary Job",
+                    "description": "Salary range invalid",
+                    "location": "Remote",
+                    "salaryMin": 100000,
+                    "salaryMax": 50000
+                }
+                """;
+
+        mockMvc.perform(post("/api/jobs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", is("Validation failed")));
     }
 }
