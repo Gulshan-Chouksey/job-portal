@@ -87,6 +87,8 @@ public class JobService {
                 .location(job.getLocation())
                 .salaryMin(job.getSalaryMin())
                 .salaryMax(job.getSalaryMax())
+                .createdAt(job.getCreatedAt())
+                .updatedAt(job.getUpdatedAt())
                 .build();
     }
 }
