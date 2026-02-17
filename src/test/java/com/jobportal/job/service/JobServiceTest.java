@@ -27,6 +27,7 @@ import com.jobportal.common.exception.ResourceNotFoundException;
 import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
 import com.jobportal.job.entity.Job;
+import com.jobportal.job.entity.JobStatus;
 import com.jobportal.job.repository.JobRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +49,8 @@ class JobServiceTest {
                 "Backend role",
                 "Remote",
                 50000,
-                80000
+                80000,
+                null
         );
 
         Job savedJob = new Job(
@@ -58,6 +60,7 @@ class JobServiceTest {
                 "Remote",
                 50000,
                 80000,
+                JobStatus.ACTIVE,
                 NOW,
                 NOW
         );
@@ -83,6 +86,7 @@ class JobServiceTest {
                 "Remote",
                 50000,
                 80000,
+                JobStatus.ACTIVE,
                 NOW,
                 NOW
         );
@@ -107,6 +111,7 @@ class JobServiceTest {
                 "Hybrid",
                 60000,
                 90000,
+                JobStatus.ACTIVE,
                 NOW,
                 NOW
         );
@@ -137,6 +142,7 @@ class JobServiceTest {
                 "Remote",
                 50000,
                 80000,
+                JobStatus.ACTIVE,
                 NOW,
                 NOW
         );
@@ -182,6 +188,7 @@ class JobServiceTest {
                 "Old Location",
                 40000,
                 60000,
+                JobStatus.ACTIVE,
                 NOW,
                 NOW
         );
@@ -191,7 +198,8 @@ class JobServiceTest {
                 "Updated Description",
                 "Updated Location",
                 70000,
-                100000
+                100000,
+                null
         );
 
         Job updatedJob = new Job(
@@ -201,6 +209,7 @@ class JobServiceTest {
                 "Updated Location",
                 70000,
                 100000,
+                JobStatus.ACTIVE,
                 NOW,
                 NOW
         );
@@ -229,7 +238,8 @@ class JobServiceTest {
                 "Desc",
                 "Location",
                 50000,
-                80000
+                80000,
+                null
         );
 
         when(jobRepository.findById(jobId)).thenReturn(java.util.Optional.empty());
@@ -257,6 +267,7 @@ class JobServiceTest {
                 "Remote",
                 50000,
                 80000,
+                JobStatus.ACTIVE,
                 NOW,
                 NOW
         );
@@ -291,14 +302,14 @@ class JobServiceTest {
     @Test
     void shouldSearchJobsByKeyword() {
 
-        Job job = new Job(1L, "Java Developer", "Backend role", "Remote", 50000, 80000, NOW, NOW);
+        Job job = new Job(1L, "Java Developer", "Backend role", "Remote", 50000, 80000, JobStatus.ACTIVE, NOW, NOW);
 
         Pageable pageable = PageRequest.of(0, 10);
         Page<Job> jobPage = new PageImpl<>(List.of(job), pageable, 1);
 
         when(jobRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(jobPage);
 
-        Page<JobResponseDTO> result = jobService.searchJobs("Java", null, null, null, pageable);
+        Page<JobResponseDTO> result = jobService.searchJobs("Java", null, null, null, null, pageable);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Java Developer", result.getContent().get(0).getTitle());
@@ -310,14 +321,14 @@ class JobServiceTest {
     @Test
     void shouldSearchJobsByLocationAndSalaryRange() {
 
-        Job job = new Job(1L, "Python Dev", "ML role", "Bangalore", 70000, 100000, NOW, NOW);
+        Job job = new Job(1L, "Python Dev", "ML role", "Bangalore", 70000, 100000, JobStatus.ACTIVE, NOW, NOW);
 
         Pageable pageable = PageRequest.of(0, 10);
         Page<Job> jobPage = new PageImpl<>(List.of(job), pageable, 1);
 
         when(jobRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(jobPage);
 
-        Page<JobResponseDTO> result = jobService.searchJobs(null, "Bangalore", 60000, 110000, pageable);
+        Page<JobResponseDTO> result = jobService.searchJobs(null, "Bangalore", 60000, 110000, null, pageable);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Bangalore", result.getContent().get(0).getLocation());
@@ -334,11 +345,99 @@ class JobServiceTest {
 
         when(jobRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(emptyPage);
 
-        Page<JobResponseDTO> result = jobService.searchJobs("Nonexistent", null, null, null, pageable);
+        Page<JobResponseDTO> result = jobService.searchJobs("Nonexistent", null, null, null, null, pageable);
 
         assertEquals(0, result.getTotalElements());
         assertEquals(0, result.getContent().size());
 
         verify(jobRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void shouldCreateJobWithDraftStatus() {
+
+        JobRequestDTO request = new JobRequestDTO(
+                "Draft Job",
+                "A draft job",
+                "Remote",
+                50000,
+                80000,
+                JobStatus.DRAFT
+        );
+
+        Job savedJob = new Job(
+                1L,
+                "Draft Job",
+                "A draft job",
+                "Remote",
+                50000,
+                80000,
+                JobStatus.DRAFT,
+                NOW,
+                NOW
+        );
+
+        when(jobRepository.save(any(Job.class))).thenReturn(savedJob);
+
+        JobResponseDTO response = jobService.createJob(request);
+
+        assertNotNull(response);
+        assertEquals(JobStatus.DRAFT, response.getStatus());
+        assertEquals("Draft Job", response.getTitle());
+
+        verify(jobRepository, times(1)).save(any(Job.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldSearchJobsByStatus() {
+
+        Job activeJob = new Job(1L, "Active Job", "Desc", "Remote", 50000, 80000, JobStatus.ACTIVE, NOW, NOW);
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Job> jobPage = new PageImpl<>(List.of(activeJob), pageable, 1);
+
+        when(jobRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(jobPage);
+
+        Page<JobResponseDTO> result = jobService.searchJobs(null, null, null, null, JobStatus.ACTIVE, pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(JobStatus.ACTIVE, result.getContent().get(0).getStatus());
+
+        verify(jobRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @Test
+    void shouldCreateJobWithDefaultActiveStatus() {
+
+        JobRequestDTO request = new JobRequestDTO(
+                "No Status Job",
+                "Testing default",
+                "Onsite",
+                40000,
+                70000,
+                null
+        );
+
+        Job savedJob = new Job(
+                1L,
+                "No Status Job",
+                "Testing default",
+                "Onsite",
+                40000,
+                70000,
+                JobStatus.ACTIVE,
+                NOW,
+                NOW
+        );
+
+        when(jobRepository.save(any(Job.class))).thenReturn(savedJob);
+
+        JobResponseDTO response = jobService.createJob(request);
+
+        assertNotNull(response);
+        assertEquals(JobStatus.ACTIVE, response.getStatus());
+
+        verify(jobRepository, times(1)).save(any(Job.class));
     }
 }
