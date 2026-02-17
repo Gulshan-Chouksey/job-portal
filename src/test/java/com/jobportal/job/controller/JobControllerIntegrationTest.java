@@ -57,7 +57,9 @@ class JobControllerIntegrationTest {
                 .andExpect(jsonPath("$.message", is("Job created successfully")))
                 .andExpect(jsonPath("$.data.id").exists())
                 .andExpect(jsonPath("$.data.title", is("Java Developer")))
-                .andExpect(jsonPath("$.data.location", is("Remote")));
+                .andExpect(jsonPath("$.data.location", is("Remote")))
+                .andExpect(jsonPath("$.data.createdAt").exists())
+                .andExpect(jsonPath("$.data.updatedAt").exists());
     }
 
     @Test
@@ -87,8 +89,8 @@ class JobControllerIntegrationTest {
     @Test
     void shouldReturnPaginatedJobsAndReturn200() throws Exception {
 
-        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000));
-        jobRepository.save(new Job(null, "Python Dev", "ML role", "Hybrid", 60000, 90000));
+        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, null, null));
+        jobRepository.save(new Job(null, "Python Dev", "ML role", "Hybrid", 60000, 90000, null, null));
 
         mockMvc.perform(get("/api/jobs")
                         .param("page", "0")
@@ -117,7 +119,7 @@ class JobControllerIntegrationTest {
     @Test
     void shouldReturnJobByIdAndReturn200() throws Exception {
 
-        Job saved = jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000));
+        Job saved = jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, null, null));
 
         mockMvc.perform(get("/api/jobs/{id}", saved.getId()))
                 .andExpect(status().isOk())
@@ -142,7 +144,7 @@ class JobControllerIntegrationTest {
     @Test
     void shouldUpdateJobAndReturn200() throws Exception {
 
-        Job saved = jobRepository.save(new Job(null, "Old Title", "Old Desc", "Old Loc", 40000, 60000));
+        Job saved = jobRepository.save(new Job(null, "Old Title", "Old Desc", "Old Loc", 40000, 60000, null, null));
 
         String updateBody = """
                 {
@@ -190,7 +192,7 @@ class JobControllerIntegrationTest {
     @Test
     void shouldDeleteJobAndReturn200() throws Exception {
 
-        Job saved = jobRepository.save(new Job(null, "To Delete", "Desc", "Location", 50000, 80000));
+        Job saved = jobRepository.save(new Job(null, "To Delete", "Desc", "Location", 50000, 80000, null, null));
 
         mockMvc.perform(delete("/api/jobs/{id}", saved.getId()))
                 .andExpect(status().isOk())
