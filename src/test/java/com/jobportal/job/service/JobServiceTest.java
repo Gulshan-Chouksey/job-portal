@@ -1,5 +1,6 @@
 package com.jobportal.job.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,6 +30,8 @@ import com.jobportal.job.repository.JobRepository;
 @ExtendWith(MockitoExtension.class)
 class JobServiceTest {
 
+    private static final LocalDateTime NOW = LocalDateTime.of(2026, 1, 1, 12, 0);
+
     @Mock
     private JobRepository jobRepository;
 
@@ -52,7 +55,9 @@ class JobServiceTest {
                 "Backend role",
                 "Remote",
                 50000,
-                80000
+                80000,
+                NOW,
+                NOW
         );
 
         when(jobRepository.save(any(Job.class))).thenReturn(savedJob);
@@ -75,7 +80,9 @@ class JobServiceTest {
                 "Backend",
                 "Remote",
                 50000,
-                80000
+                80000,
+                NOW,
+                NOW
         );
 
         when(jobRepository.findAll()).thenReturn(List.of(job));
@@ -97,7 +104,9 @@ class JobServiceTest {
                 "Backend role",
                 "Hybrid",
                 60000,
-                90000
+                90000,
+                NOW,
+                NOW
         );
 
         Pageable pageable = PageRequest.of(0, 10);
@@ -125,7 +134,9 @@ class JobServiceTest {
                 "Backend role",
                 "Remote",
                 50000,
-                80000
+                80000,
+                NOW,
+                NOW
         );
 
         when(jobRepository.findById(jobId)).thenReturn(java.util.Optional.of(job));
@@ -168,7 +179,9 @@ class JobServiceTest {
                 "Old Description",
                 "Old Location",
                 40000,
-                60000
+                60000,
+                NOW,
+                NOW
         );
 
         JobRequestDTO updateRequest = new JobRequestDTO(
@@ -185,7 +198,9 @@ class JobServiceTest {
                 "Updated Description",
                 "Updated Location",
                 70000,
-                100000
+                100000,
+                NOW,
+                NOW
         );
 
         when(jobRepository.findById(jobId)).thenReturn(java.util.Optional.of(existingJob));
@@ -239,7 +254,9 @@ class JobServiceTest {
                 "Backend",
                 "Remote",
                 50000,
-                80000
+                80000,
+                NOW,
+                NOW
         );
 
         when(jobRepository.findById(jobId)).thenReturn(java.util.Optional.of(existingJob));
