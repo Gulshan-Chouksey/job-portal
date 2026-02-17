@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.never;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import com.jobportal.common.exception.ResourceNotFoundException;
 import com.jobportal.job.dto.JobRequestDTO;
@@ -283,5 +285,60 @@ class JobServiceTest {
 
         verify(jobRepository, times(1)).findById(jobId);
         verify(jobRepository, never()).delete(any(Job.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldSearchJobsByKeyword() {
+
+        Job job = new Job(1L, "Java Developer", "Backend role", "Remote", 50000, 80000, NOW, NOW);
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Job> jobPage = new PageImpl<>(List.of(job), pageable, 1);
+
+        when(jobRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(jobPage);
+
+        Page<JobResponseDTO> result = jobService.searchJobs("Java", null, null, null, pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Java Developer", result.getContent().get(0).getTitle());
+
+        verify(jobRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldSearchJobsByLocationAndSalaryRange() {
+
+        Job job = new Job(1L, "Python Dev", "ML role", "Bangalore", 70000, 100000, NOW, NOW);
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Job> jobPage = new PageImpl<>(List.of(job), pageable, 1);
+
+        when(jobRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(jobPage);
+
+        Page<JobResponseDTO> result = jobService.searchJobs(null, "Bangalore", 60000, 110000, pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Bangalore", result.getContent().get(0).getLocation());
+
+        verify(jobRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldReturnEmptyPageWhenNoJobsMatchSearch() {
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Job> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+
+        when(jobRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(emptyPage);
+
+        Page<JobResponseDTO> result = jobService.searchJobs("Nonexistent", null, null, null, pageable);
+
+        assertEquals(0, result.getTotalElements());
+        assertEquals(0, result.getContent().size());
+
+        verify(jobRepository, times(1)).findAll(any(Specification.class), eq(pageable));
     }
 }
