@@ -24,6 +24,8 @@ public class JobResponseDTO {
     private Integer salaryMin;
     private Integer salaryMax;
     private JobStatus status;
+    private Long employerId;
+    private String companyName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

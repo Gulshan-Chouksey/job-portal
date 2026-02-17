@@ -9,6 +9,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.jobportal.common.exception.ResourceNotFoundException;
+import com.jobportal.employer.entity.Employer;
+import com.jobportal.employer.repository.EmployerRepository;
 import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
 import com.jobportal.job.entity.Job;
@@ -23,6 +25,26 @@ import lombok.RequiredArgsConstructor;
 public class JobService {
 
     private final JobRepository jobRepository;
+    private final EmployerRepository employerRepository;
+
+    public JobResponseDTO createJob(JobRequestDTO request, Long employerId) {
+
+        Employer employer = employerRepository.findById(employerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employer not found with id: " + employerId));
+
+        Job job = new Job();
+        job.setEmployer(employer);
+        job.setTitle(request.getTitle());
+        job.setDescription(request.getDescription());
+        job.setLocation(request.getLocation());
+        job.setSalaryMin(request.getSalaryMin());
+        job.setSalaryMax(request.getSalaryMax());
+        job.setStatus(request.getStatus() != null ? request.getStatus() : JobStatus.ACTIVE);
+
+        Job saved = jobRepository.save(job);
+
+        return mapToResponse(saved);
+    }
 
     public JobResponseDTO createJob(JobRequestDTO request) {
 
@@ -112,8 +134,13 @@ public class JobService {
         jobRepository.delete(job);
     }
 
+    public Page<JobResponseDTO> getJobsByEmployer(Long employerId, Pageable pageable) {
+        return jobRepository.findByEmployerId(employerId, pageable)
+                .map(this::mapToResponse);
+    }
+
     private JobResponseDTO mapToResponse(Job job) {
-        return JobResponseDTO.builder()
+        JobResponseDTO.JobResponseDTOBuilder builder = JobResponseDTO.builder()
                 .id(job.getId())
                 .title(job.getTitle())
                 .description(job.getDescription())
@@ -122,7 +149,13 @@ public class JobService {
                 .salaryMax(job.getSalaryMax())
                 .status(job.getStatus())
                 .createdAt(job.getCreatedAt())
-                .updatedAt(job.getUpdatedAt())
-                .build();
+                .updatedAt(job.getUpdatedAt());
+
+        if (job.getEmployer() != null) {
+            builder.employerId(job.getEmployer().getId())
+                   .companyName(job.getEmployer().getCompanyName());
+        }
+
+        return builder.build();
     }
 }
