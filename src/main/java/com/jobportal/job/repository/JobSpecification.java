@@ -3,6 +3,7 @@ package com.jobportal.job.repository;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.jobportal.job.entity.Job;
+import com.jobportal.job.entity.JobStatus;
 
 /**
  * JPA Specifications for building dynamic Job queries.
@@ -32,5 +33,10 @@ public final class JobSpecification {
     public static Specification<Job> salaryMaxLessThanOrEqual(Integer maxSalary) {
         return (root, query, cb) ->
                 cb.lessThanOrEqualTo(root.get("salaryMax"), maxSalary);
+    }
+
+    public static Specification<Job> statusEquals(JobStatus status) {
+        return (root, query, cb) ->
+                cb.equal(root.get("status"), status);
     }
 }
