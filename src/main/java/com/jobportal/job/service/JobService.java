@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.jobportal.common.exception.ResourceNotFoundException;
@@ -12,6 +13,7 @@ import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
 import com.jobportal.job.entity.Job;
 import com.jobportal.job.repository.JobRepository;
+import com.jobportal.job.repository.JobSpecification;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,6 +46,29 @@ public class JobService {
 
     public Page<JobResponseDTO> getAllJobs(Pageable pageable) {
         return jobRepository.findAll(pageable)
+                .map(this::mapToResponse);
+    }
+
+    public Page<JobResponseDTO> searchJobs(String keyword, String location,
+                                           Integer minSalary, Integer maxSalary,
+                                           Pageable pageable) {
+
+        Specification<Job> spec = (root, query, cb) -> cb.conjunction();
+
+        if (keyword != null && !keyword.isBlank()) {
+            spec = spec.and(JobSpecification.titleContains(keyword));
+        }
+        if (location != null && !location.isBlank()) {
+            spec = spec.and(JobSpecification.locationContains(location));
+        }
+        if (minSalary != null) {
+            spec = spec.and(JobSpecification.salaryMinGreaterThanOrEqual(minSalary));
+        }
+        if (maxSalary != null) {
+            spec = spec.and(JobSpecification.salaryMaxLessThanOrEqual(maxSalary));
+        }
+
+        return jobRepository.findAll(spec, pageable)
                 .map(this::mapToResponse);
     }
 
