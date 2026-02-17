@@ -12,6 +12,7 @@ import com.jobportal.common.exception.ResourceNotFoundException;
 import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
 import com.jobportal.job.entity.Job;
+import com.jobportal.job.entity.JobStatus;
 import com.jobportal.job.repository.JobRepository;
 import com.jobportal.job.repository.JobSpecification;
 
@@ -31,6 +32,7 @@ public class JobService {
         job.setLocation(request.getLocation());
         job.setSalaryMin(request.getSalaryMin());
         job.setSalaryMax(request.getSalaryMax());
+        job.setStatus(request.getStatus() != null ? request.getStatus() : JobStatus.ACTIVE);
 
         Job saved = jobRepository.save(job);
 
@@ -51,7 +53,7 @@ public class JobService {
 
     public Page<JobResponseDTO> searchJobs(String keyword, String location,
                                            Integer minSalary, Integer maxSalary,
-                                           Pageable pageable) {
+                                           JobStatus status, Pageable pageable) {
 
         Specification<Job> spec = (root, query, cb) -> cb.conjunction();
 
@@ -66,6 +68,9 @@ public class JobService {
         }
         if (maxSalary != null) {
             spec = spec.and(JobSpecification.salaryMaxLessThanOrEqual(maxSalary));
+        }
+        if (status != null) {
+            spec = spec.and(JobSpecification.statusEquals(status));
         }
 
         return jobRepository.findAll(spec, pageable)
@@ -90,6 +95,9 @@ public class JobService {
         job.setLocation(request.getLocation());
         job.setSalaryMin(request.getSalaryMin());
         job.setSalaryMax(request.getSalaryMax());
+        if (request.getStatus() != null) {
+            job.setStatus(request.getStatus());
+        }
 
         Job updated = jobRepository.save(job);
 
@@ -112,6 +120,7 @@ public class JobService {
                 .location(job.getLocation())
                 .salaryMin(job.getSalaryMin())
                 .salaryMax(job.getSalaryMax())
+                .status(job.getStatus())
                 .createdAt(job.getCreatedAt())
                 .updatedAt(job.getUpdatedAt())
                 .build();
