@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jobportal.common.response.ApiResponse;
@@ -40,6 +41,17 @@ public class JobController {
             @PageableDefault(size = 10, sort = "id") Pageable pageable) {
         Page<JobResponseDTO> jobs = jobService.getAllJobs(pageable);
         return ResponseEntity.ok(ApiResponse.success("Jobs retrieved successfully", jobs));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<Page<JobResponseDTO>>> searchJobs(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) Integer minSalary,
+            @RequestParam(required = false) Integer maxSalary,
+            @PageableDefault(size = 10, sort = "id") Pageable pageable) {
+        Page<JobResponseDTO> jobs = jobService.searchJobs(keyword, location, minSalary, maxSalary, pageable);
+        return ResponseEntity.ok(ApiResponse.success("Jobs search results", jobs));
     }
 
     @GetMapping("/{id}")
