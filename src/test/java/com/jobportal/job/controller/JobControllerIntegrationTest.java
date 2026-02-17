@@ -208,4 +208,75 @@ class JobControllerIntegrationTest {
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", is("Job not found with id: 999")));
     }
+
+    // ---- GET /api/jobs/search ----
+
+    @Test
+    void shouldSearchJobsByKeyword() throws Exception {
+
+        jobRepository.save(new Job(null, "Java Developer", "Backend", "Remote", 50000, 80000, null, null));
+        jobRepository.save(new Job(null, "Python Developer", "ML role", "Hybrid", 60000, 90000, null, null));
+        jobRepository.save(new Job(null, "DevOps Engineer", "Infra role", "Onsite", 70000, 100000, null, null));
+
+        mockMvc.perform(get("/api/jobs/search")
+                        .param("keyword", "Developer"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.message", is("Jobs search results")))
+                .andExpect(jsonPath("$.data.content", hasSize(2)))
+                .andExpect(jsonPath("$.data.totalElements", is(2)));
+    }
+
+    @Test
+    void shouldSearchJobsByLocation() throws Exception {
+
+        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, null, null));
+        jobRepository.save(new Job(null, "Python Dev", "ML role", "Bangalore", 60000, 90000, null, null));
+
+        mockMvc.perform(get("/api/jobs/search")
+                        .param("location", "Remote"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content", hasSize(1)))
+                .andExpect(jsonPath("$.data.content[0].title", is("Java Dev")));
+    }
+
+    @Test
+    void shouldSearchJobsBySalaryRange() throws Exception {
+
+        jobRepository.save(new Job(null, "Junior Dev", "Entry level", "Remote", 30000, 50000, null, null));
+        jobRepository.save(new Job(null, "Senior Dev", "Senior role", "Hybrid", 80000, 120000, null, null));
+        jobRepository.save(new Job(null, "Mid Dev", "Mid level", "Onsite", 50000, 80000, null, null));
+
+        mockMvc.perform(get("/api/jobs/search")
+                        .param("minSalary", "50000")
+                        .param("maxSalary", "100000"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content", hasSize(1)))
+                .andExpect(jsonPath("$.data.content[0].title", is("Mid Dev")));
+    }
+
+    @Test
+    void shouldReturnAllJobsWhenNoFiltersProvided() throws Exception {
+
+        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, null, null));
+        jobRepository.save(new Job(null, "Python Dev", "ML role", "Hybrid", 60000, 90000, null, null));
+
+        mockMvc.perform(get("/api/jobs/search"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.content", hasSize(2)))
+                .andExpect(jsonPath("$.data.totalElements", is(2)));
+    }
+
+    @Test
+    void shouldReturnEmptyResultsWhenNoJobsMatchSearch() throws Exception {
+
+        jobRepository.save(new Job(null, "Java Dev", "Backend", "Remote", 50000, 80000, null, null));
+
+        mockMvc.perform(get("/api/jobs/search")
+                        .param("keyword", "Nonexistent"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content", hasSize(0)))
+                .andExpect(jsonPath("$.data.totalElements", is(0)));
+    }
 }
