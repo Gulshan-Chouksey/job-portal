@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import com.jobportal.auth.dto.AuthResponseDTO;
 import com.jobportal.auth.dto.ChangePasswordDTO;
 import com.jobportal.auth.dto.LoginRequestDTO;
+import com.jobportal.auth.dto.RefreshTokenRequestDTO;
 import com.jobportal.auth.dto.RegisterRequestDTO;
+import com.jobportal.auth.entity.RefreshToken;
 import com.jobportal.auth.entity.User;
 import com.jobportal.auth.repository.UserRepository;
 import com.jobportal.common.exception.BadRequestException;
@@ -29,6 +31,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthResponseDTO register(RegisterRequestDTO request) {
         log.info("Registering new user with email: {}", request.getEmail());
@@ -50,8 +53,9 @@ public class AuthService {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(saved.getEmail());
         String token = jwtService.generateToken(userDetails);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(saved);
 
-        return mapToResponse(saved, token);
+        return mapToResponse(saved, token, refreshToken.getToken());
     }
 
     public AuthResponseDTO login(LoginRequestDTO request) {
@@ -69,9 +73,10 @@ public class AuthService {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String token = jwtService.generateToken(userDetails);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
         log.info("User logged in successfully: {}", request.getEmail());
 
-        return mapToResponse(user, token);
+        return mapToResponse(user, token, refreshToken.getToken());
     }
 
     public AuthResponseDTO getCurrentUser(String email) {
@@ -83,7 +88,7 @@ public class AuthService {
                     return new ResourceNotFoundException("User not found with email: " + email);
                 });
 
-        return mapToResponse(user, null);
+        return mapToResponse(user, null, null);
     }
 
     public void changePassword(String email, ChangePasswordDTO request) {
@@ -110,13 +115,33 @@ public class AuthService {
         log.info("Password changed successfully for user: {}", email);
     }
 
-    private AuthResponseDTO mapToResponse(User user, String token) {
+    public AuthResponseDTO refreshToken(RefreshTokenRequestDTO request) {
+        log.info("Refreshing access token");
+
+        RefreshToken refreshToken = refreshTokenService.verifyRefreshToken(request.getRefreshToken());
+        User user = refreshToken.getUser();
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        String newAccessToken = jwtService.generateToken(userDetails);
+        log.info("Access token refreshed for user: {}", user.getEmail());
+
+        return mapToResponse(user, newAccessToken, refreshToken.getToken());
+    }
+
+    public void logout(RefreshTokenRequestDTO request) {
+        log.info("Logging out user - revoking refresh token");
+        refreshTokenService.revokeRefreshToken(request.getRefreshToken());
+        log.info("User logged out successfully");
+    }
+
+    private AuthResponseDTO mapToResponse(User user, String token, String refreshToken) {
         return AuthResponseDTO.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .token(token)
+                .refreshToken(refreshToken)
                 .build();
     }
 }

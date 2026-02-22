@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jobportal.application.repository.ApplicationRepository;
 import com.jobportal.auth.entity.Role;
 import com.jobportal.auth.entity.User;
+import com.jobportal.auth.repository.RefreshTokenRepository;
 import com.jobportal.auth.repository.UserRepository;
 import com.jobportal.candidate.entity.Candidate;
 import com.jobportal.candidate.repository.CandidateRepository;
@@ -46,6 +47,9 @@ class SavedJobControllerIntegrationTest {
     @Autowired
     private ApplicationRepository applicationRepository;
 
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
     private Job testJob;
 
     @BeforeEach
@@ -54,6 +58,7 @@ class SavedJobControllerIntegrationTest {
         applicationRepository.deleteAll();
         candidateRepository.deleteAll();
         jobRepository.deleteAll();
+        refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
 
         // Create candidate user

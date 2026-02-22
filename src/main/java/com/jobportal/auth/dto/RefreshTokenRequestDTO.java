@@ -1,9 +1,7 @@
 package com.jobportal.auth.dto;
 
-import com.jobportal.auth.entity.Role;
-
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,13 +10,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class AuthResponseDTO {
+public class RefreshTokenRequestDTO {
 
-    private Long id;
-    private String name;
-    private String email;
-    private Role role;
-    private String token;
+    @NotBlank(message = "Refresh token is required")
     private String refreshToken;
 }

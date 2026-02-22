@@ -19,7 +19,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.jobportal.auth.dto.AuthResponseDTO;
 import com.jobportal.auth.dto.ChangePasswordDTO;
 import com.jobportal.auth.dto.LoginRequestDTO;
+import com.jobportal.auth.dto.RefreshTokenRequestDTO;
 import com.jobportal.auth.dto.RegisterRequestDTO;
+import com.jobportal.auth.entity.RefreshToken;
 import com.jobportal.auth.entity.Role;
 import com.jobportal.auth.entity.User;
 import com.jobportal.auth.repository.UserRepository;
@@ -43,6 +45,9 @@ class AuthServiceTest {
 
     @Mock
     private CustomUserDetailsService userDetailsService;
+
+    @Mock
+    private RefreshTokenService refreshTokenService;
 
     @InjectMocks
     private AuthService authService;
@@ -74,6 +79,13 @@ class AuthServiceTest {
         when(userDetailsService.loadUserByUsername("john@example.com")).thenReturn(mockUserDetails);
         when(jwtService.generateToken(any(UserDetails.class))).thenReturn("jwt-token");
 
+        RefreshToken refreshToken = RefreshToken.builder()
+                .id(1L)
+                .token("refresh-token-uuid")
+                .user(savedUser)
+                .build();
+        when(refreshTokenService.createRefreshToken(any(User.class))).thenReturn(refreshToken);
+
         AuthResponseDTO response = authService.register(request);
 
         assertNotNull(response);
@@ -81,6 +93,7 @@ class AuthServiceTest {
         assertEquals("john@example.com", response.getEmail());
         assertEquals(Role.CANDIDATE, response.getRole());
         assertEquals("jwt-token", response.getToken());
+        assertEquals("refresh-token-uuid", response.getRefreshToken());
 
         verify(userRepository, times(1)).save(any(User.class));
     }
@@ -124,11 +137,19 @@ class AuthServiceTest {
         when(userDetailsService.loadUserByUsername("john@example.com")).thenReturn(mockUserDetails);
         when(jwtService.generateToken(any(UserDetails.class))).thenReturn("jwt-token");
 
+        RefreshToken refreshToken = RefreshToken.builder()
+                .id(1L)
+                .token("refresh-token-uuid")
+                .user(user)
+                .build();
+        when(refreshTokenService.createRefreshToken(any(User.class))).thenReturn(refreshToken);
+
         AuthResponseDTO response = authService.login(request);
 
         assertNotNull(response);
         assertEquals("John", response.getName());
         assertEquals("jwt-token", response.getToken());
+        assertEquals("refresh-token-uuid", response.getRefreshToken());
 
         verify(authenticationManager, times(1)).authenticate(any());
     }
@@ -211,5 +232,55 @@ class AuthServiceTest {
 
         assertThrows(com.jobportal.common.exception.ResourceNotFoundException.class,
                 () -> authService.changePassword("john@example.com", request));
+    }
+
+    // ── REFRESH TOKEN ───────────────────────────────────────────────────
+
+    @Test
+    void shouldRefreshTokenSuccessfully() {
+        RefreshTokenRequestDTO request = new RefreshTokenRequestDTO("refresh-token-uuid");
+
+        User user = User.builder()
+                .id(1L)
+                .name("John")
+                .email("john@example.com")
+                .password("encodedPassword")
+                .role(Role.CANDIDATE)
+                .build();
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .id(1L)
+                .token("refresh-token-uuid")
+                .user(user)
+                .build();
+
+        when(refreshTokenService.verifyRefreshToken("refresh-token-uuid")).thenReturn(refreshToken);
+
+        UserDetails mockUserDetails = org.springframework.security.core.userdetails.User
+                .withUsername("john@example.com")
+                .password("encodedPassword")
+                .roles("CANDIDATE")
+                .build();
+
+        when(userDetailsService.loadUserByUsername("john@example.com")).thenReturn(mockUserDetails);
+        when(jwtService.generateToken(any(UserDetails.class))).thenReturn("new-jwt-token");
+
+        AuthResponseDTO response = authService.refreshToken(request);
+
+        assertNotNull(response);
+        assertEquals("John", response.getName());
+        assertEquals("new-jwt-token", response.getToken());
+        assertEquals("refresh-token-uuid", response.getRefreshToken());
+    }
+
+    // ── LOGOUT ──────────────────────────────────────────────────────────
+
+    @Test
+    void shouldLogoutSuccessfully() {
+        RefreshTokenRequestDTO request = new RefreshTokenRequestDTO("refresh-token-uuid");
+
+        authService.logout(request);
+
+        verify(refreshTokenService).revokeRefreshToken("refresh-token-uuid");
     }
 }

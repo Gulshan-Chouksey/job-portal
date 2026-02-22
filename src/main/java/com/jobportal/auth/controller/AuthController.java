@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jobportal.auth.dto.AuthResponseDTO;
 import com.jobportal.auth.dto.ChangePasswordDTO;
 import com.jobportal.auth.dto.LoginRequestDTO;
+import com.jobportal.auth.dto.RefreshTokenRequestDTO;
 import com.jobportal.auth.dto.RegisterRequestDTO;
 import com.jobportal.auth.service.AuthService;
 import com.jobportal.common.response.ApiResponse;
@@ -54,5 +55,19 @@ public class AuthController {
             @Valid @RequestBody ChangePasswordDTO request) {
         authService.changePassword(principal.getName(), request);
         return ResponseEntity.ok(ApiResponse.success("Password changed successfully", null));
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequestDTO request) {
+        AuthResponseDTO response = authService.refreshToken(request);
+        return ResponseEntity.ok(ApiResponse.success("Token refreshed successfully", response));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @Valid @RequestBody RefreshTokenRequestDTO request) {
+        authService.logout(request);
+        return ResponseEntity.ok(ApiResponse.success("Logged out successfully", null));
     }
 }
