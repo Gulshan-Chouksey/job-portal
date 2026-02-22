@@ -13,7 +13,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jobportal.application.repository.ApplicationRepository;
 import com.jobportal.auth.repository.UserRepository;
+import com.jobportal.candidate.repository.CandidateRepository;
+import com.jobportal.employer.repository.EmployerRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -25,8 +28,20 @@ class AuthControllerIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ApplicationRepository applicationRepository;
+
+    @Autowired
+    private CandidateRepository candidateRepository;
+
+    @Autowired
+    private EmployerRepository employerRepository;
+
     @BeforeEach
     void setUp() {
+        applicationRepository.deleteAll();
+        candidateRepository.deleteAll();
+        employerRepository.deleteAll();
         userRepository.deleteAll();
     }
 
