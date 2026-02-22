@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.Resource;
+import org.springframework.mock.web.MockMultipartFile;
 
 import com.jobportal.auth.entity.Role;
 import com.jobportal.auth.entity.User;
@@ -24,6 +26,7 @@ import com.jobportal.candidate.entity.Candidate;
 import com.jobportal.candidate.repository.CandidateRepository;
 import com.jobportal.common.exception.DuplicateResourceException;
 import com.jobportal.common.exception.ResourceNotFoundException;
+import com.jobportal.common.service.FileStorageService;
 
 @ExtendWith(MockitoExtension.class)
 class CandidateServiceTest {
@@ -36,6 +39,9 @@ class CandidateServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private FileStorageService fileStorageService;
 
     @InjectMocks
     private CandidateService candidateService;
@@ -256,5 +262,117 @@ class CandidateServiceTest {
 
         assertThrows(ResourceNotFoundException.class,
                 () -> candidateService.updateProfile(EMAIL, request));
+    }
+
+    // ── UPLOAD RESUME ───────────────────────────────────────────────────
+
+    @Test
+    void shouldUploadResumeSuccessfully() {
+        User user = createTestUser();
+        Candidate candidate = createTestCandidate(user);
+        candidate.setResumeUrl(null);
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "resume.pdf", "application/pdf", "PDF content".getBytes());
+
+        Candidate updated = createTestCandidate(user);
+        updated.setResumeUrl("resumes/test-uuid.pdf");
+
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        when(candidateRepository.findByUserId(1L)).thenReturn(Optional.of(candidate));
+        when(fileStorageService.storeFile(file, "resumes")).thenReturn("resumes/test-uuid.pdf");
+        when(candidateRepository.save(any(Candidate.class))).thenReturn(updated);
+
+        CandidateResponseDTO response = candidateService.uploadResume(EMAIL, file);
+
+        assertNotNull(response);
+        assertEquals("resumes/test-uuid.pdf", response.getResumeUrl());
+        verify(fileStorageService).storeFile(file, "resumes");
+    }
+
+    @Test
+    void shouldDeleteOldResumeOnUpload() {
+        User user = createTestUser();
+        Candidate candidate = createTestCandidate(user);
+        candidate.setResumeUrl("resumes/old-file.pdf");
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "resume.pdf", "application/pdf", "PDF content".getBytes());
+
+        Candidate updated = createTestCandidate(user);
+        updated.setResumeUrl("resumes/new-uuid.pdf");
+
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        when(candidateRepository.findByUserId(1L)).thenReturn(Optional.of(candidate));
+        when(fileStorageService.storeFile(file, "resumes")).thenReturn("resumes/new-uuid.pdf");
+        when(candidateRepository.save(any(Candidate.class))).thenReturn(updated);
+
+        candidateService.uploadResume(EMAIL, file);
+
+        verify(fileStorageService).deleteFile("resumes/old-file.pdf");
+        verify(fileStorageService).storeFile(file, "resumes");
+    }
+
+    @Test
+    void shouldThrowWhenUserNotFoundOnUpload() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "resume.pdf", "application/pdf", "PDF content".getBytes());
+
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> candidateService.uploadResume(EMAIL, file));
+    }
+
+    @Test
+    void shouldThrowWhenProfileNotFoundOnUpload() {
+        User user = createTestUser();
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "resume.pdf", "application/pdf", "PDF content".getBytes());
+
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        when(candidateRepository.findByUserId(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> candidateService.uploadResume(EMAIL, file));
+    }
+
+    // ── DOWNLOAD RESUME ─────────────────────────────────────────────────
+
+    @Test
+    void shouldDownloadResumeSuccessfully() {
+        User user = createTestUser();
+        Candidate candidate = createTestCandidate(user);
+        candidate.setResumeUrl("resumes/test.pdf");
+
+        Resource mockResource = org.mockito.Mockito.mock(Resource.class);
+
+        when(candidateRepository.findById(1L)).thenReturn(Optional.of(candidate));
+        when(fileStorageService.loadFile("resumes/test.pdf")).thenReturn(mockResource);
+
+        Resource result = candidateService.downloadResume(1L);
+
+        assertNotNull(result);
+        verify(fileStorageService).loadFile("resumes/test.pdf");
+    }
+
+    @Test
+    void shouldThrowWhenCandidateNotFoundOnDownload() {
+        when(candidateRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> candidateService.downloadResume(99L));
+    }
+
+    @Test
+    void shouldThrowWhenNoResumeOnDownload() {
+        User user = createTestUser();
+        Candidate candidate = createTestCandidate(user);
+        candidate.setResumeUrl(null);
+
+        when(candidateRepository.findById(1L)).thenReturn(Optional.of(candidate));
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> candidateService.downloadResume(1L));
     }
 }

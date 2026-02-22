@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/employers/{id:\\d+}", "/api/employers/{id:\\d+}/jobs").permitAll()
                 .requestMatchers("/api/employers/**").hasRole("EMPLOYER")
                 .requestMatchers("/api/candidates/profile").hasRole("CANDIDATE")
-                .requestMatchers(HttpMethod.GET, "/api/candidates/{id:\\d+}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/candidates/{id:\\d+}", "/api/candidates/{id:\\d+}/resume").permitAll()
                 .requestMatchers("/api/candidates/**").hasRole("CANDIDATE")
                 .requestMatchers("/api/applications/**").authenticated()
                 .requestMatchers("/api/saved-jobs/**").hasRole("CANDIDATE")

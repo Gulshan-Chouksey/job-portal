@@ -1,6 +1,8 @@
 package com.jobportal.candidate.service;
 
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.jobportal.auth.entity.User;
 import com.jobportal.auth.repository.UserRepository;
@@ -10,6 +12,7 @@ import com.jobportal.candidate.entity.Candidate;
 import com.jobportal.candidate.repository.CandidateRepository;
 import com.jobportal.common.exception.DuplicateResourceException;
 import com.jobportal.common.exception.ResourceNotFoundException;
+import com.jobportal.common.service.FileStorageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +24,7 @@ public class CandidateService {
 
     private final CandidateRepository candidateRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
     public CandidateResponseDTO createProfile(String email, CandidateRequestDTO request) {
         log.info("Creating candidate profile for user: {}", email);
@@ -111,6 +115,52 @@ public class CandidateService {
         log.info("Candidate profile updated successfully for user: {}", email);
 
         return mapToResponse(updated);
+    }
+
+    public CandidateResponseDTO uploadResume(String email, MultipartFile file) {
+        log.info("Uploading resume for user: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.warn("User not found with email: {}", email);
+                    return new ResourceNotFoundException("User not found with email: " + email);
+                });
+
+        Candidate candidate = candidateRepository.findByUserId(user.getId())
+                .orElseThrow(() -> {
+                    log.warn("Candidate profile not found for user: {}", email);
+                    return new ResourceNotFoundException("Candidate profile not found for user: " + email);
+                });
+
+        // Delete old resume if exists
+        if (candidate.getResumeUrl() != null && !candidate.getResumeUrl().isBlank()) {
+            log.info("Deleting old resume: {}", candidate.getResumeUrl());
+            fileStorageService.deleteFile(candidate.getResumeUrl());
+        }
+
+        String filePath = fileStorageService.storeFile(file, "resumes");
+        candidate.setResumeUrl(filePath);
+        Candidate updated = candidateRepository.save(candidate);
+        log.info("Resume uploaded successfully for user: {}", email);
+
+        return mapToResponse(updated);
+    }
+
+    public Resource downloadResume(Long candidateId) {
+        log.info("Downloading resume for candidate id: {}", candidateId);
+
+        Candidate candidate = candidateRepository.findById(candidateId)
+                .orElseThrow(() -> {
+                    log.warn("Candidate not found with id: {}", candidateId);
+                    return new ResourceNotFoundException("Candidate not found with id: " + candidateId);
+                });
+
+        if (candidate.getResumeUrl() == null || candidate.getResumeUrl().isBlank()) {
+            log.warn("No resume found for candidate id: {}", candidateId);
+            throw new ResourceNotFoundException("No resume found for candidate id: " + candidateId);
+        }
+
+        return fileStorageService.loadFile(candidate.getResumeUrl());
     }
 
     private CandidateResponseDTO mapToResponse(Candidate candidate) {
