@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.jobportal.candidate.dto.CandidateDashboardDTO;
 import com.jobportal.candidate.dto.CandidateRequestDTO;
 import com.jobportal.candidate.dto.CandidateResponseDTO;
 import com.jobportal.candidate.service.CandidateService;
@@ -45,6 +46,12 @@ public class CandidateController {
     public ResponseEntity<ApiResponse<CandidateResponseDTO>> getMyProfile(Principal principal) {
         CandidateResponseDTO response = candidateService.getProfile(principal.getName());
         return ResponseEntity.ok(ApiResponse.success("Candidate profile retrieved", response));
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<ApiResponse<CandidateDashboardDTO>> getDashboard(Principal principal) {
+        CandidateDashboardDTO response = candidateService.getDashboard(principal.getName());
+        return ResponseEntity.ok(ApiResponse.success("Candidate dashboard stats retrieved", response));
     }
 
     @GetMapping("/{id}")

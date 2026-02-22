@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.jobportal.application.entity.ApplicationStatus;
 import com.jobportal.application.entity.JobApplication;
 
 public interface ApplicationRepository extends JpaRepository<JobApplication, Long> {
@@ -15,4 +16,10 @@ public interface ApplicationRepository extends JpaRepository<JobApplication, Lon
     Page<JobApplication> findByJobEmployerId(Long employerId, Pageable pageable);
 
     boolean existsByCandidateIdAndJobId(Long candidateId, Long jobId);
+
+    long countByJobEmployerId(Long employerId);
+
+    long countByCandidateId(Long candidateId);
+
+    long countByCandidateIdAndStatus(Long candidateId, ApplicationStatus status);
 }

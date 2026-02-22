@@ -4,8 +4,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.jobportal.application.entity.ApplicationStatus;
+import com.jobportal.application.repository.ApplicationRepository;
 import com.jobportal.auth.entity.User;
 import com.jobportal.auth.repository.UserRepository;
+import com.jobportal.candidate.dto.CandidateDashboardDTO;
 import com.jobportal.candidate.dto.CandidateRequestDTO;
 import com.jobportal.candidate.dto.CandidateResponseDTO;
 import com.jobportal.candidate.entity.Candidate;
@@ -13,6 +16,7 @@ import com.jobportal.candidate.repository.CandidateRepository;
 import com.jobportal.common.exception.DuplicateResourceException;
 import com.jobportal.common.exception.ResourceNotFoundException;
 import com.jobportal.common.service.FileStorageService;
+import com.jobportal.job.repository.SavedJobRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +29,8 @@ public class CandidateService {
     private final CandidateRepository candidateRepository;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final ApplicationRepository applicationRepository;
+    private final SavedJobRepository savedJobRepository;
 
     public CandidateResponseDTO createProfile(String email, CandidateRequestDTO request) {
         log.info("Creating candidate profile for user: {}", email);
@@ -161,6 +167,47 @@ public class CandidateService {
         }
 
         return fileStorageService.loadFile(candidate.getResumeUrl());
+    }
+
+    public CandidateDashboardDTO getDashboard(String email) {
+        log.info("Fetching dashboard stats for candidate: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.warn("User not found with email: {}", email);
+                    return new ResourceNotFoundException("User not found with email: " + email);
+                });
+
+        Candidate candidate = candidateRepository.findByUserId(user.getId())
+                .orElseThrow(() -> {
+                    log.warn("Candidate profile not found for user: {}", email);
+                    return new ResourceNotFoundException("Candidate profile not found for user: " + email);
+                });
+
+        long totalApplications = applicationRepository.countByCandidateId(candidate.getId());
+        long pending = applicationRepository.countByCandidateIdAndStatus(candidate.getId(), ApplicationStatus.PENDING);
+        long reviewed = applicationRepository.countByCandidateIdAndStatus(candidate.getId(), ApplicationStatus.REVIEWED);
+        long shortlisted = applicationRepository.countByCandidateIdAndStatus(candidate.getId(), ApplicationStatus.SHORTLISTED);
+        long interview = applicationRepository.countByCandidateIdAndStatus(candidate.getId(), ApplicationStatus.INTERVIEW);
+        long offered = applicationRepository.countByCandidateIdAndStatus(candidate.getId(), ApplicationStatus.OFFERED);
+        long rejected = applicationRepository.countByCandidateIdAndStatus(candidate.getId(), ApplicationStatus.REJECTED);
+        long withdrawn = applicationRepository.countByCandidateIdAndStatus(candidate.getId(), ApplicationStatus.WITHDRAWN);
+        long totalSavedJobs = savedJobRepository.countByCandidateId(candidate.getId());
+
+        log.info("Dashboard stats retrieved for candidate: {} - totalApplications={}, totalSavedJobs={}",
+                email, totalApplications, totalSavedJobs);
+
+        return CandidateDashboardDTO.builder()
+                .totalApplications(totalApplications)
+                .pendingApplications(pending)
+                .reviewedApplications(reviewed)
+                .shortlistedApplications(shortlisted)
+                .interviewApplications(interview)
+                .offeredApplications(offered)
+                .rejectedApplications(rejected)
+                .withdrawnApplications(withdrawn)
+                .totalSavedJobs(totalSavedJobs)
+                .build();
     }
 
     private CandidateResponseDTO mapToResponse(Candidate candidate) {

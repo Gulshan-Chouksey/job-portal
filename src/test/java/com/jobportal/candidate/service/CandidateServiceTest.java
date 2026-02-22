@@ -17,9 +17,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
 
+import com.jobportal.application.entity.ApplicationStatus;
+import com.jobportal.application.repository.ApplicationRepository;
 import com.jobportal.auth.entity.Role;
 import com.jobportal.auth.entity.User;
 import com.jobportal.auth.repository.UserRepository;
+import com.jobportal.candidate.dto.CandidateDashboardDTO;
 import com.jobportal.candidate.dto.CandidateRequestDTO;
 import com.jobportal.candidate.dto.CandidateResponseDTO;
 import com.jobportal.candidate.entity.Candidate;
@@ -27,6 +30,7 @@ import com.jobportal.candidate.repository.CandidateRepository;
 import com.jobportal.common.exception.DuplicateResourceException;
 import com.jobportal.common.exception.ResourceNotFoundException;
 import com.jobportal.common.service.FileStorageService;
+import com.jobportal.job.repository.SavedJobRepository;
 
 @ExtendWith(MockitoExtension.class)
 class CandidateServiceTest {
@@ -42,6 +46,12 @@ class CandidateServiceTest {
 
     @Mock
     private FileStorageService fileStorageService;
+
+    @Mock
+    private ApplicationRepository applicationRepository;
+
+    @Mock
+    private SavedJobRepository savedJobRepository;
 
     @InjectMocks
     private CandidateService candidateService;
@@ -374,5 +384,81 @@ class CandidateServiceTest {
 
         assertThrows(ResourceNotFoundException.class,
                 () -> candidateService.downloadResume(1L));
+    }
+
+    // ── GET DASHBOARD ───────────────────────────────────────────────────
+
+    @Test
+    void shouldGetDashboardSuccessfully() {
+        User user = createTestUser();
+        Candidate candidate = createTestCandidate(user);
+
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        when(candidateRepository.findByUserId(1L)).thenReturn(Optional.of(candidate));
+        when(applicationRepository.countByCandidateId(1L)).thenReturn(15L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.PENDING)).thenReturn(3L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.REVIEWED)).thenReturn(2L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.SHORTLISTED)).thenReturn(4L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.INTERVIEW)).thenReturn(2L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.OFFERED)).thenReturn(1L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.REJECTED)).thenReturn(2L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.WITHDRAWN)).thenReturn(1L);
+        when(savedJobRepository.countByCandidateId(1L)).thenReturn(8L);
+
+        CandidateDashboardDTO dashboard = candidateService.getDashboard(EMAIL);
+
+        assertNotNull(dashboard);
+        assertEquals(15L, dashboard.getTotalApplications());
+        assertEquals(3L, dashboard.getPendingApplications());
+        assertEquals(2L, dashboard.getReviewedApplications());
+        assertEquals(4L, dashboard.getShortlistedApplications());
+        assertEquals(2L, dashboard.getInterviewApplications());
+        assertEquals(1L, dashboard.getOfferedApplications());
+        assertEquals(2L, dashboard.getRejectedApplications());
+        assertEquals(1L, dashboard.getWithdrawnApplications());
+        assertEquals(8L, dashboard.getTotalSavedJobs());
+    }
+
+    @Test
+    void shouldGetDashboardWithZeroStats() {
+        User user = createTestUser();
+        Candidate candidate = createTestCandidate(user);
+
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        when(candidateRepository.findByUserId(1L)).thenReturn(Optional.of(candidate));
+        when(applicationRepository.countByCandidateId(1L)).thenReturn(0L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.PENDING)).thenReturn(0L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.REVIEWED)).thenReturn(0L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.SHORTLISTED)).thenReturn(0L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.INTERVIEW)).thenReturn(0L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.OFFERED)).thenReturn(0L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.REJECTED)).thenReturn(0L);
+        when(applicationRepository.countByCandidateIdAndStatus(1L, ApplicationStatus.WITHDRAWN)).thenReturn(0L);
+        when(savedJobRepository.countByCandidateId(1L)).thenReturn(0L);
+
+        CandidateDashboardDTO dashboard = candidateService.getDashboard(EMAIL);
+
+        assertNotNull(dashboard);
+        assertEquals(0L, dashboard.getTotalApplications());
+        assertEquals(0L, dashboard.getTotalSavedJobs());
+    }
+
+    @Test
+    void shouldThrowWhenUserNotFoundOnGetDashboard() {
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> candidateService.getDashboard(EMAIL));
+    }
+
+    @Test
+    void shouldThrowWhenProfileNotFoundOnGetDashboard() {
+        User user = createTestUser();
+
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        when(candidateRepository.findByUserId(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> candidateService.getDashboard(EMAIL));
     }
 }

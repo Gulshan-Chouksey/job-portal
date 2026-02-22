@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jobportal.common.response.ApiResponse;
+import com.jobportal.employer.dto.EmployerDashboardDTO;
 import com.jobportal.employer.dto.EmployerRequestDTO;
 import com.jobportal.employer.dto.EmployerResponseDTO;
 import com.jobportal.employer.service.EmployerService;
@@ -46,6 +47,12 @@ public class EmployerController {
     public ResponseEntity<ApiResponse<EmployerResponseDTO>> getMyProfile(Principal principal) {
         EmployerResponseDTO response = employerService.getProfile(principal.getName());
         return ResponseEntity.ok(ApiResponse.success("Employer profile retrieved", response));
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<ApiResponse<EmployerDashboardDTO>> getDashboard(Principal principal) {
+        EmployerDashboardDTO response = employerService.getDashboard(principal.getName());
+        return ResponseEntity.ok(ApiResponse.success("Employer dashboard stats retrieved", response));
     }
 
     @GetMapping("/{id}")

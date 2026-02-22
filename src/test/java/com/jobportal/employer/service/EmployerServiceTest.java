@@ -15,15 +15,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.jobportal.application.repository.ApplicationRepository;
 import com.jobportal.auth.entity.Role;
 import com.jobportal.auth.entity.User;
 import com.jobportal.auth.repository.UserRepository;
 import com.jobportal.common.exception.DuplicateResourceException;
 import com.jobportal.common.exception.ResourceNotFoundException;
+import com.jobportal.employer.dto.EmployerDashboardDTO;
 import com.jobportal.employer.dto.EmployerRequestDTO;
 import com.jobportal.employer.dto.EmployerResponseDTO;
 import com.jobportal.employer.entity.Employer;
 import com.jobportal.employer.repository.EmployerRepository;
+import com.jobportal.job.entity.JobStatus;
+import com.jobportal.job.repository.JobRepository;
 
 @ExtendWith(MockitoExtension.class)
 class EmployerServiceTest {
@@ -36,6 +40,12 @@ class EmployerServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private JobRepository jobRepository;
+
+    @Mock
+    private ApplicationRepository applicationRepository;
 
     @InjectMocks
     private EmployerService employerService;
@@ -244,5 +254,72 @@ class EmployerServiceTest {
 
         assertThrows(ResourceNotFoundException.class,
                 () -> employerService.updateProfile(EMAIL, request));
+    }
+
+    // ── GET DASHBOARD ───────────────────────────────────────────────────
+
+    @Test
+    void shouldGetDashboardSuccessfully() {
+        User user = createTestUser();
+        Employer employer = createTestEmployer(user);
+
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        when(employerRepository.findByUserId(1L)).thenReturn(Optional.of(employer));
+        when(jobRepository.countByEmployerId(1L)).thenReturn(10L);
+        when(jobRepository.countByEmployerIdAndStatus(1L, JobStatus.ACTIVE)).thenReturn(5L);
+        when(jobRepository.countByEmployerIdAndStatus(1L, JobStatus.DRAFT)).thenReturn(3L);
+        when(jobRepository.countByEmployerIdAndStatus(1L, JobStatus.CLOSED)).thenReturn(2L);
+        when(applicationRepository.countByJobEmployerId(1L)).thenReturn(25L);
+
+        EmployerDashboardDTO dashboard = employerService.getDashboard(EMAIL);
+
+        assertNotNull(dashboard);
+        assertEquals(10L, dashboard.getTotalJobs());
+        assertEquals(5L, dashboard.getActiveJobs());
+        assertEquals(3L, dashboard.getDraftJobs());
+        assertEquals(2L, dashboard.getClosedJobs());
+        assertEquals(25L, dashboard.getTotalApplicationsReceived());
+    }
+
+    @Test
+    void shouldGetDashboardWithZeroStats() {
+        User user = createTestUser();
+        Employer employer = createTestEmployer(user);
+
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        when(employerRepository.findByUserId(1L)).thenReturn(Optional.of(employer));
+        when(jobRepository.countByEmployerId(1L)).thenReturn(0L);
+        when(jobRepository.countByEmployerIdAndStatus(1L, JobStatus.ACTIVE)).thenReturn(0L);
+        when(jobRepository.countByEmployerIdAndStatus(1L, JobStatus.DRAFT)).thenReturn(0L);
+        when(jobRepository.countByEmployerIdAndStatus(1L, JobStatus.CLOSED)).thenReturn(0L);
+        when(applicationRepository.countByJobEmployerId(1L)).thenReturn(0L);
+
+        EmployerDashboardDTO dashboard = employerService.getDashboard(EMAIL);
+
+        assertNotNull(dashboard);
+        assertEquals(0L, dashboard.getTotalJobs());
+        assertEquals(0L, dashboard.getActiveJobs());
+        assertEquals(0L, dashboard.getDraftJobs());
+        assertEquals(0L, dashboard.getClosedJobs());
+        assertEquals(0L, dashboard.getTotalApplicationsReceived());
+    }
+
+    @Test
+    void shouldThrowWhenUserNotFoundOnGetDashboard() {
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> employerService.getDashboard(EMAIL));
+    }
+
+    @Test
+    void shouldThrowWhenProfileNotFoundOnGetDashboard() {
+        User user = createTestUser();
+
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(user));
+        when(employerRepository.findByUserId(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> employerService.getDashboard(EMAIL));
     }
 }
