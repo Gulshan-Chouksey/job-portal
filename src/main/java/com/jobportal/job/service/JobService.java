@@ -1,5 +1,6 @@
 package com.jobportal.job.service;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -173,7 +174,7 @@ public class JobService {
     }
 
     public void deleteJob(Long id) {
-        log.info("Deleting job with id: {}", id);
+        log.info("Soft-deleting job with id: {}", id);
 
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> {
@@ -181,8 +182,10 @@ public class JobService {
                     return new ResourceNotFoundException("Job not found with id: " + id);
                 });
 
-        jobRepository.delete(job);
-        log.info("Job deleted successfully with id: {}", id);
+        job.setDeleted(true);
+        job.setDeletedAt(LocalDateTime.now());
+        jobRepository.save(job);
+        log.info("Job soft-deleted successfully with id: {}", id);
     }
 
     public Page<JobResponseDTO> getJobsByEmployer(Long employerId, Pageable pageable) {

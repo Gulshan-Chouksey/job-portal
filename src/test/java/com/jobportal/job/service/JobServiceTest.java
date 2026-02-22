@@ -288,11 +288,13 @@ class JobServiceTest {
         );
 
         when(jobRepository.findById(jobId)).thenReturn(java.util.Optional.of(existingJob));
+        when(jobRepository.save(any(Job.class))).thenReturn(existingJob);
 
         jobService.deleteJob(jobId);
 
         verify(jobRepository, times(1)).findById(jobId);
-        verify(jobRepository, times(1)).delete(existingJob);
+        verify(jobRepository, times(1)).save(any(Job.class));
+        verify(jobRepository, never()).delete(any(Job.class));
     }
 
     @Test
