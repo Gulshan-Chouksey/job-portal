@@ -49,6 +49,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/candidates/{id:\\d+}").permitAll()
                 .requestMatchers("/api/candidates/**").hasRole("CANDIDATE")
                 .requestMatchers("/api/applications/**").authenticated()
+                .requestMatchers("/api/saved-jobs/**").hasRole("CANDIDATE")
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))

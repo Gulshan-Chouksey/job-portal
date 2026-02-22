@@ -21,6 +21,7 @@ import com.jobportal.auth.entity.User;
 import com.jobportal.auth.repository.UserRepository;
 import com.jobportal.employer.entity.Employer;
 import com.jobportal.employer.repository.EmployerRepository;
+import com.jobportal.job.repository.SavedJobRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,10 +40,14 @@ class EmployerControllerIntegrationTest {
     @Autowired
     private ApplicationRepository applicationRepository;
 
+    @Autowired
+    private SavedJobRepository savedJobRepository;
+
     private User testUser;
 
     @BeforeEach
     void setUp() {
+        savedJobRepository.deleteAll();
         applicationRepository.deleteAll();
         employerRepository.deleteAll();
         userRepository.deleteAll();

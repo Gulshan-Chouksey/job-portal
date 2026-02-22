@@ -26,6 +26,7 @@ import com.jobportal.candidate.repository.CandidateRepository;
 import com.jobportal.job.entity.Job;
 import com.jobportal.job.entity.JobStatus;
 import com.jobportal.job.repository.JobRepository;
+import com.jobportal.job.repository.SavedJobRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -43,12 +44,16 @@ class ApplicationControllerIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private SavedJobRepository savedJobRepository;
+
     private User candidateUser;
     private Candidate candidate;
     private Job job;
 
     @BeforeEach
     void setUp() {
+        savedJobRepository.deleteAll();
         applicationRepository.deleteAll();
         jobRepository.deleteAll();
         candidateRepository.deleteAll();
