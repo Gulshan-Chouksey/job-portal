@@ -7,10 +7,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.jobportal.auth.dto.AuthResponseDTO;
+import com.jobportal.auth.dto.ChangePasswordDTO;
 import com.jobportal.auth.dto.LoginRequestDTO;
 import com.jobportal.auth.dto.RegisterRequestDTO;
 import com.jobportal.auth.entity.User;
 import com.jobportal.auth.repository.UserRepository;
+import com.jobportal.common.exception.BadRequestException;
 import com.jobportal.common.exception.DuplicateResourceException;
 import com.jobportal.common.exception.ResourceNotFoundException;
 
@@ -82,6 +84,30 @@ public class AuthService {
                 });
 
         return mapToResponse(user, null);
+    }
+
+    public void changePassword(String email, ChangePasswordDTO request) {
+        log.info("Changing password for user: {}", email);
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            log.warn("Password change failed - passwords do not match for user: {}", email);
+            throw new BadRequestException("New password and confirm password do not match");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.warn("User not found with email: {}", email);
+                    return new ResourceNotFoundException("User not found with email: " + email);
+                });
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            log.warn("Password change failed - incorrect current password for user: {}", email);
+            throw new BadRequestException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        log.info("Password changed successfully for user: {}", email);
     }
 
     private AuthResponseDTO mapToResponse(User user, String token) {

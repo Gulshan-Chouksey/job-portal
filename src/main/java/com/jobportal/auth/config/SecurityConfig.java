@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-                .requestMatchers("/api/auth/me").authenticated()
+                .requestMatchers("/api/auth/me", "/api/auth/change-password").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/jobs/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/jobs/**").hasRole("EMPLOYER")
                 .requestMatchers(HttpMethod.PUT, "/api/jobs/**").hasRole("EMPLOYER")

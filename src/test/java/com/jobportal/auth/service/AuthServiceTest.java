@@ -17,11 +17,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.jobportal.auth.dto.AuthResponseDTO;
+import com.jobportal.auth.dto.ChangePasswordDTO;
 import com.jobportal.auth.dto.LoginRequestDTO;
 import com.jobportal.auth.dto.RegisterRequestDTO;
 import com.jobportal.auth.entity.Role;
 import com.jobportal.auth.entity.User;
 import com.jobportal.auth.repository.UserRepository;
+import com.jobportal.common.exception.BadRequestException;
 import com.jobportal.common.exception.DuplicateResourceException;
 
 @ExtendWith(MockitoExtension.class)
@@ -148,5 +150,66 @@ class AuthServiceTest {
         assertNotNull(response);
         assertEquals("John", response.getName());
         assertEquals(Role.CANDIDATE, response.getRole());
+    }
+
+    // ── CHANGE PASSWORD ─────────────────────────────────────────────────
+
+    @Test
+    void shouldChangePasswordSuccessfully() {
+        ChangePasswordDTO request = new ChangePasswordDTO("oldPass123", "newPass456", "newPass456");
+
+        User user = User.builder()
+                .id(1L)
+                .name("John")
+                .email("john@example.com")
+                .password("encodedOldPass")
+                .role(Role.CANDIDATE)
+                .build();
+
+        when(userRepository.findByEmail("john@example.com")).thenReturn(java.util.Optional.of(user));
+        when(passwordEncoder.matches("oldPass123", "encodedOldPass")).thenReturn(true);
+        when(passwordEncoder.encode("newPass456")).thenReturn("encodedNewPass");
+
+        authService.changePassword("john@example.com", request);
+
+        verify(userRepository).save(any(User.class));
+        verify(passwordEncoder).encode("newPass456");
+    }
+
+    @Test
+    void shouldThrowWhenPasswordsDoNotMatch() {
+        ChangePasswordDTO request = new ChangePasswordDTO("oldPass123", "newPass456", "differentPass");
+
+        assertThrows(BadRequestException.class,
+                () -> authService.changePassword("john@example.com", request));
+    }
+
+    @Test
+    void shouldThrowWhenCurrentPasswordIsIncorrect() {
+        ChangePasswordDTO request = new ChangePasswordDTO("wrongPass", "newPass456", "newPass456");
+
+        User user = User.builder()
+                .id(1L)
+                .name("John")
+                .email("john@example.com")
+                .password("encodedOldPass")
+                .role(Role.CANDIDATE)
+                .build();
+
+        when(userRepository.findByEmail("john@example.com")).thenReturn(java.util.Optional.of(user));
+        when(passwordEncoder.matches("wrongPass", "encodedOldPass")).thenReturn(false);
+
+        assertThrows(BadRequestException.class,
+                () -> authService.changePassword("john@example.com", request));
+    }
+
+    @Test
+    void shouldThrowWhenUserNotFoundOnChangePassword() {
+        ChangePasswordDTO request = new ChangePasswordDTO("oldPass123", "newPass456", "newPass456");
+
+        when(userRepository.findByEmail("john@example.com")).thenReturn(java.util.Optional.empty());
+
+        assertThrows(com.jobportal.common.exception.ResourceNotFoundException.class,
+                () -> authService.changePassword("john@example.com", request));
     }
 }
