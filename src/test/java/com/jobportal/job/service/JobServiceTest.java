@@ -29,6 +29,7 @@ import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
 import com.jobportal.job.entity.Job;
 import com.jobportal.job.entity.JobStatus;
+import com.jobportal.job.repository.CategoryRepository;
 import com.jobportal.job.repository.JobRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +42,9 @@ class JobServiceTest {
 
     @Mock
     private EmployerRepository employerRepository;
+
+    @Mock
+    private CategoryRepository categoryRepository;
 
     @InjectMocks
     private JobService jobService;

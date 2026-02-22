@@ -1,6 +1,7 @@
 package com.jobportal.job.dto;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import com.jobportal.job.entity.JobStatus;
 
@@ -26,6 +27,7 @@ public class JobResponseDTO {
     private JobStatus status;
     private Long employerId;
     private String companyName;
+    private Set<CategoryResponseDTO> categories;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

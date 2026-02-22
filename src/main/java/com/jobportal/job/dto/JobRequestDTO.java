@@ -1,5 +1,7 @@
 package com.jobportal.job.dto;
 
+import java.util.Set;
+
 import com.jobportal.job.entity.JobStatus;
 
 import jakarta.validation.constraints.AssertTrue;
@@ -31,6 +33,19 @@ public class JobRequestDTO {
     private Integer salaryMax;
 
     private JobStatus status;
+
+    private Set<Long> categoryIds;
+
+    // Backwards-compatible constructor (without categoryIds)
+    public JobRequestDTO(String title, String description, String location,
+                         Integer salaryMin, Integer salaryMax, JobStatus status) {
+        this.title = title;
+        this.description = description;
+        this.location = location;
+        this.salaryMin = salaryMin;
+        this.salaryMax = salaryMax;
+        this.status = status;
+    }
 
     @AssertTrue(message = "salaryMin must be less than or equal to salaryMax")
     private boolean isSalaryRangeValid() {

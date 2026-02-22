@@ -1,6 +1,8 @@
 package com.jobportal.job.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -11,10 +13,13 @@ import org.springframework.stereotype.Service;
 import com.jobportal.common.exception.ResourceNotFoundException;
 import com.jobportal.employer.entity.Employer;
 import com.jobportal.employer.repository.EmployerRepository;
+import com.jobportal.job.dto.CategoryResponseDTO;
 import com.jobportal.job.dto.JobRequestDTO;
 import com.jobportal.job.dto.JobResponseDTO;
+import com.jobportal.job.entity.Category;
 import com.jobportal.job.entity.Job;
 import com.jobportal.job.entity.JobStatus;
+import com.jobportal.job.repository.CategoryRepository;
 import com.jobportal.job.repository.JobRepository;
 import com.jobportal.job.repository.JobSpecification;
 
@@ -28,6 +33,7 @@ public class JobService {
 
     private final JobRepository jobRepository;
     private final EmployerRepository employerRepository;
+    private final CategoryRepository categoryRepository;
 
     public JobResponseDTO createJob(JobRequestDTO request, Long employerId) {
         log.info("Creating job with title '{}' for employer id: {}", request.getTitle(), employerId);
@@ -47,6 +53,12 @@ public class JobService {
         job.setSalaryMax(request.getSalaryMax());
         job.setStatus(request.getStatus() != null ? request.getStatus() : JobStatus.ACTIVE);
 
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            Set<Category> categories = new HashSet<>(categoryRepository.findAllById(request.getCategoryIds()));
+            job.setCategories(categories);
+            log.debug("Assigned {} categories to job", categories.size());
+        }
+
         Job saved = jobRepository.save(job);
         log.info("Job created successfully with id: {} for employer: {}", saved.getId(), employerId);
 
@@ -63,6 +75,12 @@ public class JobService {
         job.setSalaryMin(request.getSalaryMin());
         job.setSalaryMax(request.getSalaryMax());
         job.setStatus(request.getStatus() != null ? request.getStatus() : JobStatus.ACTIVE);
+
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            Set<Category> categories = new HashSet<>(categoryRepository.findAllById(request.getCategoryIds()));
+            job.setCategories(categories);
+            log.debug("Assigned {} categories to job", categories.size());
+        }
 
         Job saved = jobRepository.save(job);
         log.info("Job created successfully with id: {}", saved.getId());
@@ -142,6 +160,12 @@ public class JobService {
             job.setStatus(request.getStatus());
         }
 
+        if (request.getCategoryIds() != null) {
+            Set<Category> categories = new HashSet<>(categoryRepository.findAllById(request.getCategoryIds()));
+            job.setCategories(categories);
+            log.debug("Updated categories for job id: {}, count: {}", id, categories.size());
+        }
+
         Job updated = jobRepository.save(job);
         log.info("Job updated successfully with id: {}", id);
 
@@ -182,6 +206,18 @@ public class JobService {
         if (job.getEmployer() != null) {
             builder.employerId(job.getEmployer().getId())
                    .companyName(job.getEmployer().getCompanyName());
+        }
+
+        if (job.getCategories() != null && !job.getCategories().isEmpty()) {
+            Set<CategoryResponseDTO> categoryDTOs = job.getCategories().stream()
+                    .map(cat -> CategoryResponseDTO.builder()
+                            .id(cat.getId())
+                            .name(cat.getName())
+                            .description(cat.getDescription())
+                            .createdAt(cat.getCreatedAt())
+                            .build())
+                    .collect(Collectors.toSet());
+            builder.categories(categoryDTOs);
         }
 
         return builder.build();
