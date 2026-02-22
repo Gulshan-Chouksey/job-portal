@@ -12,7 +12,9 @@ import com.jobportal.employer.entity.Employer;
 import com.jobportal.employer.repository.EmployerRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmployerService {
@@ -21,11 +23,16 @@ public class EmployerService {
     private final UserRepository userRepository;
 
     public EmployerResponseDTO createProfile(String email, EmployerRequestDTO request) {
+        log.info("Creating employer profile for user: {}", email);
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> {
+                    log.warn("User not found with email: {}", email);
+                    return new ResourceNotFoundException("User not found with email: " + email);
+                });
 
         if (employerRepository.existsByUserId(user.getId())) {
+            log.warn("Employer profile already exists for user: {}", email);
             throw new DuplicateResourceException("Employer profile already exists for user: " + email);
         }
 
@@ -38,36 +45,55 @@ public class EmployerService {
         employer.setLocation(request.getLocation());
 
         Employer saved = employerRepository.save(employer);
+        log.info("Employer profile created successfully with id: {} for user: {}", saved.getId(), email);
 
         return mapToResponse(saved);
     }
 
     public EmployerResponseDTO getProfile(String email) {
+        log.info("Fetching employer profile for user: {}", email);
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> {
+                    log.warn("User not found with email: {}", email);
+                    return new ResourceNotFoundException("User not found with email: " + email);
+                });
 
         Employer employer = employerRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Employer profile not found for user: " + email));
+                .orElseThrow(() -> {
+                    log.warn("Employer profile not found for user: {}", email);
+                    return new ResourceNotFoundException("Employer profile not found for user: " + email);
+                });
 
         return mapToResponse(employer);
     }
 
     public EmployerResponseDTO getProfileById(Long id) {
+        log.info("Fetching employer profile by id: {}", id);
 
         Employer employer = employerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employer not found with id: " + id));
+                .orElseThrow(() -> {
+                    log.warn("Employer not found with id: {}", id);
+                    return new ResourceNotFoundException("Employer not found with id: " + id);
+                });
 
         return mapToResponse(employer);
     }
 
     public EmployerResponseDTO updateProfile(String email, EmployerRequestDTO request) {
+        log.info("Updating employer profile for user: {}", email);
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> {
+                    log.warn("User not found with email: {}", email);
+                    return new ResourceNotFoundException("User not found with email: " + email);
+                });
 
         Employer employer = employerRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Employer profile not found for user: " + email));
+                .orElseThrow(() -> {
+                    log.warn("Employer profile not found for user: {}", email);
+                    return new ResourceNotFoundException("Employer profile not found for user: " + email);
+                });
 
         employer.setCompanyName(request.getCompanyName());
         employer.setCompanyDescription(request.getCompanyDescription());
@@ -76,6 +102,7 @@ public class EmployerService {
         employer.setLocation(request.getLocation());
 
         Employer updated = employerRepository.save(employer);
+        log.info("Employer profile updated successfully for user: {}", email);
 
         return mapToResponse(updated);
     }

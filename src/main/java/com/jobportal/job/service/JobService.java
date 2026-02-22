@@ -19,7 +19,9 @@ import com.jobportal.job.repository.JobRepository;
 import com.jobportal.job.repository.JobSpecification;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JobService {
@@ -28,9 +30,13 @@ public class JobService {
     private final EmployerRepository employerRepository;
 
     public JobResponseDTO createJob(JobRequestDTO request, Long employerId) {
+        log.info("Creating job with title '{}' for employer id: {}", request.getTitle(), employerId);
 
         Employer employer = employerRepository.findById(employerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employer not found with id: " + employerId));
+                .orElseThrow(() -> {
+                    log.warn("Employer not found with id: {}", employerId);
+                    return new ResourceNotFoundException("Employer not found with id: " + employerId);
+                });
 
         Job job = new Job();
         job.setEmployer(employer);
@@ -42,11 +48,13 @@ public class JobService {
         job.setStatus(request.getStatus() != null ? request.getStatus() : JobStatus.ACTIVE);
 
         Job saved = jobRepository.save(job);
+        log.info("Job created successfully with id: {} for employer: {}", saved.getId(), employerId);
 
         return mapToResponse(saved);
     }
 
     public JobResponseDTO createJob(JobRequestDTO request) {
+        log.info("Creating job with title '{}' (no employer)", request.getTitle());
 
         Job job = new Job();
         job.setTitle(request.getTitle());
@@ -57,11 +65,13 @@ public class JobService {
         job.setStatus(request.getStatus() != null ? request.getStatus() : JobStatus.ACTIVE);
 
         Job saved = jobRepository.save(job);
+        log.info("Job created successfully with id: {}", saved.getId());
 
         return mapToResponse(saved);
     }
 
     public List<JobResponseDTO> getAllJobs() {
+        log.info("Fetching all jobs");
         return jobRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -69,6 +79,7 @@ public class JobService {
     }
 
     public Page<JobResponseDTO> getAllJobs(Pageable pageable) {
+        log.info("Fetching all jobs with pagination - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
         return jobRepository.findAll(pageable)
                 .map(this::mapToResponse);
     }
@@ -76,6 +87,8 @@ public class JobService {
     public Page<JobResponseDTO> searchJobs(String keyword, String location,
                                            Integer minSalary, Integer maxSalary,
                                            JobStatus status, Pageable pageable) {
+        log.info("Searching jobs - keyword: '{}', location: '{}', salary: {}-{}, status: {}",
+                keyword, location, minSalary, maxSalary, status);
 
         Specification<Job> spec = (root, query, cb) -> cb.conjunction();
 
@@ -100,17 +113,25 @@ public class JobService {
     }
 
     public JobResponseDTO getJobById(Long id) {
+        log.info("Fetching job with id: {}", id);
 
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + id));
+                .orElseThrow(() -> {
+                    log.warn("Job not found with id: {}", id);
+                    return new ResourceNotFoundException("Job not found with id: " + id);
+                });
 
         return mapToResponse(job);
     }
 
     public JobResponseDTO updateJob(Long id, JobRequestDTO request) {
+        log.info("Updating job with id: {}", id);
 
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + id));
+                .orElseThrow(() -> {
+                    log.warn("Job not found with id: {}", id);
+                    return new ResourceNotFoundException("Job not found with id: " + id);
+                });
 
         job.setTitle(request.getTitle());
         job.setDescription(request.getDescription());
@@ -122,19 +143,26 @@ public class JobService {
         }
 
         Job updated = jobRepository.save(job);
+        log.info("Job updated successfully with id: {}", id);
 
         return mapToResponse(updated);
     }
 
     public void deleteJob(Long id) {
+        log.info("Deleting job with id: {}", id);
 
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Job not found with id: " + id));
+                .orElseThrow(() -> {
+                    log.warn("Job not found with id: {}", id);
+                    return new ResourceNotFoundException("Job not found with id: " + id);
+                });
 
         jobRepository.delete(job);
+        log.info("Job deleted successfully with id: {}", id);
     }
 
     public Page<JobResponseDTO> getJobsByEmployer(Long employerId, Pageable pageable) {
+        log.info("Fetching jobs for employer id: {}", employerId);
         return jobRepository.findByEmployerId(employerId, pageable)
                 .map(this::mapToResponse);
     }
