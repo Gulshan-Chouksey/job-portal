@@ -49,7 +49,6 @@ class AdminControllerIntegrationTest {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
-    private User adminUser;
     private User candidateUser;
 
     @BeforeEach
@@ -61,7 +60,7 @@ class AdminControllerIntegrationTest {
         refreshTokenRepository.deleteAll();
         userRepository.deleteAll();
 
-        adminUser = userRepository.save(User.builder()
+        userRepository.save(User.builder()
                 .name("Admin User")
                 .email("admin@test.com")
                 .password("encoded")
@@ -91,8 +90,8 @@ class AdminControllerIntegrationTest {
     @WithMockUser(username = "admin@test.com", roles = "ADMIN")
     void shouldGetAllUsersWithPagination() throws Exception {
         mockMvc.perform(get("/api/admin/users")
-                        .param("page", "0")
-                        .param("size", "1"))
+                .param("page", "0")
+                .param("size", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.size", is(1)))
                 .andExpect(jsonPath("$.data.totalElements", is(2)))
@@ -131,8 +130,8 @@ class AdminControllerIntegrationTest {
                 """;
 
         mockMvc.perform(put("/api/admin/users/" + candidateUser.getId() + "/role")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.role", is("EMPLOYER")));
@@ -148,8 +147,8 @@ class AdminControllerIntegrationTest {
                 """;
 
         mockMvc.perform(put("/api/admin/users/" + candidateUser.getId() + "/role")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
                 .andExpect(status().isBadRequest());
     }
 
