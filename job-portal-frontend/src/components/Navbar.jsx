@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { HiMenu, HiX } from 'react-icons/hi';
+import { HiMenu, HiX, HiBriefcase } from 'react-icons/hi';
+import { BsStars } from 'react-icons/bs';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -66,12 +67,13 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group" ref={logoRef}>
             <div className="relative">
-              <div className="w-10 h-10 bg-neon-cyan/10 border border-neon-cyan/50 rounded-xl flex items-center justify-center group-hover:shadow-neon-cyan group-hover:border-neon-cyan transition-all duration-500">
-                <span className="text-neon-cyan font-orbitron font-bold text-sm tracking-wider">JP</span>
+              <div className="w-10 h-10 bg-neon-cyan/20 border border-neon-cyan/50 rounded-xl flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(0,240,255,0.6)] group-hover:border-neon-cyan transition-all duration-500 relative z-10 overflow-hidden">
+                <BsStars className="absolute top-1 right-1 w-3 h-3 text-white animate-pulse" />
+                <HiBriefcase className="w-6 h-6 text-neon-cyan drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] group-hover:scale-110 transition-transform duration-300" />
               </div>
               {/* Pulsing orbital ring around logo */}
               <div className="absolute -inset-2 border border-neon-cyan/20 rounded-xl animate-pulse-glow pointer-events-none group-hover:border-neon-cyan/40 transition-all" />
-              <div className="absolute -inset-1 border border-neon-purple/10 rounded-xl animate-spin-slow pointer-events-none" style={{ borderStyle: 'dashed' }} />
+              <div className="absolute -inset-1 border border-neon-purple/20 rounded-xl animate-spin-slow pointer-events-none" style={{ borderStyle: 'dashed' }} />
             </div>
             <span className="text-xl font-bold tracking-widest uppercase font-orbitron">
               <span className="text-white">JOB</span>

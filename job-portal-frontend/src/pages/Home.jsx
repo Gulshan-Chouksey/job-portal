@@ -11,8 +11,16 @@ export default function Home() {
     <div className="relative">
       {/* Hero */}
       <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-neon-magenta/20 rounded-full blur-[120px] mix-blend-screen animate-pulse-glow" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-neon-cyan/20 rounded-full blur-[150px] mix-blend-screen animate-pulse-glow" style={{ animationDelay: '1s' }} />
+        {/* Decorative Floating Planets / Images */}
+        <div className="absolute top-10 left-4 md:left-20 w-48 h-48 md:w-80 md:h-80 rounded-full animate-float mix-blend-screen opacity-80" style={{ animationDuration: '8s' }}>
+          <div className="absolute inset-0 bg-neon-magenta/30 rounded-full blur-[60px]" />
+          <img src="https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=600&h=600&auto=format&fit=crop" alt="Planet" className="w-full h-full object-cover rounded-full shadow-[0_0_60px_rgba(255,0,60,0.4)] border border-neon-magenta/20 block" />
+        </div>
+        
+        <div className="absolute bottom-4 right-4 md:bottom-10 md:right-20 w-64 h-64 md:w-96 md:h-96 rounded-full animate-float mix-blend-screen opacity-80" style={{ animationDelay: '1.5s', animationDuration: '10s' }}>
+          <div className="absolute inset-0 bg-neon-cyan/30 rounded-full blur-[80px]" />
+          <img src="https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?q=80&w=600&h=600&auto=format&fit=crop" alt="Galaxy" className="w-full h-full object-cover rounded-full shadow-[0_0_80px_rgba(0,240,255,0.4)] border border-neon-cyan/20 block" />
+        </div>
 
         {/* Orbital ring behind hero */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
