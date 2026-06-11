@@ -98,7 +98,7 @@ select,
   }
 
   .neon-text {
-    @apply text-white drop-shadow-[0_0_8px_rgba(0, 240, 255, 0.8)];
+    @apply text-white drop-shadow-[0_0_8px_rgba(0_240_255_0.8)];
   }
 
   .btn-primary {
@@ -106,7 +106,7 @@ select,
   }
 
   .btn-outline {
-    @apply px-6 py-2 rounded-lg border border-neon-cyan text-neon-cyan font-medium hover:bg-neon-cyan/10 hover:shadow-[inset_0_0_10px_rgba(0, 240, 255, 0.3)] transition-all duration-300;
+    @apply px-6 py-2 rounded-lg border border-neon-cyan text-neon-cyan font-medium hover:bg-neon-cyan/10 hover:shadow-[inset_0_0_10px_rgba(0_240_255_0.3)] transition-all duration-300;
   }
 }
 

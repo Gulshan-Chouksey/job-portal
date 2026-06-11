@@ -55,6 +55,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                 .requestMatchers("/api/categories/**").hasRole("EMPLOYER")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                // Static frontend resources
+                .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))
