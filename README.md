@@ -1,8 +1,8 @@
-# 🚀 Job Portal
+# 🚀 HireHub
 
-A modern, full-stack Job Portal web application built with **Spring Boot** (Backend) and **React + Vite** (Frontend). 
+A modern, full-stack job matching web application built with **Spring Boot** (Backend) and **React + Vite** (Frontend). 
 
-![Job Portal Screenshot](./Screenshot_25-3-2026_194514_localhost.jpeg)
+![HireHub Screenshot](./Screenshot_25-3-2026_194514_localhost.jpeg)
 
 ## ✨ Features
 - **Role-Based Access Control**: Separate portals for Candidates, Employers, and Admins.
@@ -31,7 +31,7 @@ A modern, full-stack Job Portal web application built with **Spring Boot** (Back
 
 - `src/main/java` - Backend Java source code (Controllers, Services, Repositories, Entities)
 - `src/main/resources` - Spring Boot configurations and static assets
-- `job-portal-frontend/` - Modern React frontend application
+- `hirehub-frontend/` - Modern React frontend application
 
 ## ⚙️ Prerequisites
 
@@ -56,7 +56,7 @@ Navigate to the root directory and start the Spring Boot application:
 Open a new terminal, navigate to the frontend directory, install dependencies, and start the development server:
 
 ```bash
-cd job-portal-frontend
+cd hirehub-frontend
 npm install
 npm run dev
 ```

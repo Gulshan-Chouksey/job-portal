@@ -1,0 +1,25 @@
+package com.hirehub.application.repository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.hirehub.application.entity.ApplicationStatus;
+import com.hirehub.application.entity.JobApplication;
+
+public interface ApplicationRepository extends JpaRepository<JobApplication, Long> {
+
+    Page<JobApplication> findByCandidateId(Long candidateId, Pageable pageable);
+
+    Page<JobApplication> findByJobId(Long jobId, Pageable pageable);
+
+    Page<JobApplication> findByJobEmployerId(Long employerId, Pageable pageable);
+
+    boolean existsByCandidateIdAndJobId(Long candidateId, Long jobId);
+
+    long countByJobEmployerId(Long employerId);
+
+    long countByCandidateId(Long candidateId);
+
+    long countByCandidateIdAndStatus(Long candidateId, ApplicationStatus status);
+}
