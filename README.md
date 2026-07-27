@@ -2,7 +2,7 @@
 
 A modern, full-stack job matching web application built with **Spring Boot** (Backend) and **React + Vite** (Frontend). 
 
-![HireHub Screenshot](./Screenshot_25-3-2026_194514_localhost.jpeg)
+![HireHub Screenshot](./hirehub_screenshot.png)
 
 ## ✨ Features
 - **Role-Based Access Control**: Separate portals for Candidates, Employers, and Admins.
