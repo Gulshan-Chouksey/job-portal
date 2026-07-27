@@ -63,7 +63,7 @@ public class DataSeeder implements CommandLineRunner {
         String encodedPassword = passwordEncoder.encode("password123");
 
         // --- Users ---
-        User admin = createUser("Admin User", "admin@jobportal.com", encodedPassword, Role.ADMIN);
+        User admin = createUser("Admin User", "admin@hirehub.com", encodedPassword, Role.ADMIN);
         User employer1User = createUser("John Smith", "john@techcorp.com", encodedPassword, Role.EMPLOYER);
         User employer2User = createUser("Sarah Johnson", "sarah@innovateinc.com", encodedPassword, Role.EMPLOYER);
         User candidate1User = createUser("Alice Brown", "alice@email.com", encodedPassword, Role.CANDIDATE);
@@ -201,7 +201,7 @@ public class DataSeeder implements CommandLineRunner {
         log.info("Database seeding completed successfully!");
         log.info("===========================================");
         log.info("Sample login credentials (password: password123):");
-        log.info("  Admin:     admin@jobportal.com");
+        log.info("  Admin:     admin@hirehub.com");
         log.info("  Employer:  john@techcorp.com");
         log.info("  Employer:  sarah@innovateinc.com");
         log.info("  Candidate: alice@email.com");
