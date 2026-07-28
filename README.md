@@ -1,5 +1,11 @@
 # 🚀 HireHub
 
+![Java](https://img.shields.io/badge/Java-21-E55100)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.7-47B275)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=646CFF)
+![License](https://img.shields.io/badge/License-MIT-007EC6)
+
 A modern, full-stack job matching web application built with **Spring Boot** (Backend) and **React + Vite** (Frontend). 
 
 ![HireHub Screenshot](./hirehub_screenshot.png)
